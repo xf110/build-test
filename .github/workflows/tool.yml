@@ -2,9 +2,9 @@
 name: 编译工具
 
 on:
-  #schedule:
-    #- cron: '0 3,20 * * *'
-  workflow_dispatch:
+  push:
+    tags:
+      - '*'
 env:
   TZ: Asia/Shanghai
 
@@ -24,11 +24,10 @@ jobs:
           
       - 
         name: 发布
-        uses: softprops/action-gh-release@v1
+        uses: svenstaro/upload-release-action@v2
         with:
           body: |
-           常用工具
-          #tag_name: test
+          tag_name: ${{ github.ref }}
           files: |
               /opt/st/strip
               /opt/st/upx-3.95-amd64_linux.tar.xz
