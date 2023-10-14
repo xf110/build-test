@@ -8,10 +8,12 @@ env:
 
 jobs:
   
-  build:
+   build:
     runs-on: ubuntu-latest
-  
     steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
       - 
         name: 下载
         run: |
@@ -34,3 +36,15 @@ jobs:
         with:
          name: upx
          path: /opt/st/upx-3.95-amd64_linux.tar.xz
+         
+      - name: 发布
+        uses: softprops/action-gh-release@v1
+        with:
+        
+          body: |
+           > ### 编译时间 ：${{ env.build_time }}
+           zip压缩包里有所有的程序（原版 压缩版）
+           
+          tag_name: ${{ env.tagtime }}
+          files: |
+               /opt/st/upx-3.95-amd64_linux.tar.xz
