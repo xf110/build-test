@@ -32,4 +32,4 @@ jobs:
           files: |
               /opt/st/strip
               /opt/st/upx-3.95-amd64_linux.tar.xz
-              #/opt/st
+      
