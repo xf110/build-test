@@ -26,11 +26,11 @@ jobs:
         if: always()
         with:
          name: strip
-         path: /opt/st/strp
+         path: /opt/st/strip
       - 
         name: 发布
         uses: actions/upload-artifact@master
         if: always()
         with:
-         name: strip
+         name: upx
          path: /opt/st/upx-3.95-amd64_linux.tar.xz
