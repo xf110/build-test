@@ -47,7 +47,7 @@ jobs:
         with:
          name: host
          path: /opt/padavan/gcc/host/*.*
-     - 
+      - 
         name: 发布
         uses: actions/upload-artifact@master
         if: always()
