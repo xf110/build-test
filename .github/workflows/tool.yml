@@ -22,10 +22,15 @@ jobs:
           
       - 
         name: 发布
-        uses: softprops/action-gh-release@v1
+        uses: actions/upload-artifact@master
+        if: always()
         with:
-          body: |
-          tag_name: 1.2.7
-          files: |
-              /opt/st/strip
-              /opt/st/upx-3.95-amd64_linux.tar.xz
+         name: strip
+         path: /opt/st/strp
+      - 
+        name: 发布
+        uses: actions/upload-artifact@master
+        if: always()
+        with:
+         name: strip
+         path: /opt/st/upx-3.95-amd64_linux.tar.xz
