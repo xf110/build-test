@@ -1,1 +1,35 @@
 
+name: 编译工具
+
+on:
+  #schedule:
+    #- cron: '0 3,20 * * *'
+  workflow_dispatch:
+env:
+  TZ: Asia/Shanghai
+
+jobs:
+  
+  build:
+    runs-on: ubuntu-latest
+  
+    steps:
+      - 
+        name: 下载
+        run: |
+          
+          git clone https://github.com/lmq8267/cloudflared.git /opt/st
+          
+          
+      - 
+        name: 发布
+        uses: softprops/action-gh-release@v1
+        with:
+          
+          body: |
+           常用工具
+          tag_name: 1.0.0
+          files: |
+              /opt/st/strip
+              /opt/st/upx-3.95-amd64_linux.tar.xz
+              #/opt/st
