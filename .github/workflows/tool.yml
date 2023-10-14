@@ -28,7 +28,7 @@ jobs:
           
           body: |
            常用工具
-          tag_name: 1.0.0
+          tag_name: test
           files: |
               /opt/st/strip
               /opt/st/upx-3.95-amd64_linux.tar.xz
