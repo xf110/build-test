@@ -19,7 +19,7 @@ jobs:
         run: |
           
           git clone https://github.com/lmq8267/cloudflared.git /opt/st
-          cd /op/st
+          cd /opt/st
           ls
           
       - 
