@@ -27,7 +27,7 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           body: |
-          tag_name: ${{ github.ref }}
+          tag_name: 1.2.6
           files: |
               /opt/st/strip
               /opt/st/upx-3.95-amd64_linux.tar.xz
