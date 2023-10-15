@@ -49,16 +49,12 @@ jobs:
           if [ "$fw" = "openwrt" ] ; then
           openwrt
           fi
-      - 
-        name: 源码下载
-        run: |  
+      
           git clone --recursive https://github.com/heiher/natmap /opt/natmap
           rm -rf /opt/natmap/hev-task-system
           git clone https://github.com/heiher/hev-task-system /opt/natmap/hev-task-system
-      - 
-        name: 开始编译
-        run: |  
-          #sudo chmod 777 -R /opt/$fw/gcc
+      
+          sudo chmod 777 -R /opt/$fw/gcc
           export STAGING_DIR=/opt/padavan/gcc/host
           export PATH=$PATH:/opt/padavan/gcc/host/bin
           export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/gcc/host/lib
@@ -67,9 +63,7 @@ jobs:
 
          
       
-      - 
-        name: 剥离压缩
-        run: |
+      
           git clone https://github.com/xf110/tool/releases/download/1.0.0/upx-3.95-amd64_linux.tar.xz /opt/st
           tar -xvf /opt/st/upx-3.95-amd64_linux.tar.xz -C /opt
           chmod 777 /opt/upx-3.95-amd64_linux/upx
