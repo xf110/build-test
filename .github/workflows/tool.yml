@@ -30,7 +30,7 @@ jobs:
           cd /opt/openwrt/gcc
           ls 
           }
-          fw=pa
+          fw=op
           if [ "$fw" = "pa" ] ; then
           padavan
           fi
