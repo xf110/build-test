@@ -15,20 +15,19 @@ jobs:
         with:
           fetch-depth: 0
       - 
-        name: 下载
+        name: 编译链下载
         run: |
           padavan(){
-        
           wget -c https://github.com/xf110/tool/releases/download/1.0.0/host.zip -P /opt/padavan/gcc/
           unzip /opt/padavan/gcc/host.zip -d /opt/padavan/gcc/
-          ls /opt/padavan/gcc/
+          dir=/opt/padavan/gcc/host/bin/mipsel-linux
           }
           
           openwrt(){
           wget -c https://github.com/xf110/tool/releases/download/1.0.0/openwrt-toolchain-23.05.0-rc3-ramips-mt7621_gcc-12.3.0_musl.Linux-x86_64.tar.xz -P /opt/openwrt/gcc/
           tar xf /opt/openwrt/gcc/mipsel-linux-uclibc-by-hanwckf.tar.gz -C /opt/openwrt/gcc/
           cd /opt/openwrt/gcc
-          ls 
+          dir=/opt/openwrt/gcc/openwrt-toolchain-23.05.0-rc3-ramips-mt7621_gcc-12.3.0_musl.Linux-x86_64/toolchain-mipsel_24kc_gcc-12.3.0_musl/bin/mipsel-openwrt-linux-musl
           }
           fw=pa
           if [ "$fw" = "pa" ] ; then
@@ -37,3 +36,14 @@ jobs:
           if [ "$fw" = "op" ] ; then
           openwrt
           fi
+      
+      
+      - 
+        name: 剥离压缩
+        run: |
+          git clone https://github.com/xf110/tool/releases/download/1.0.0/upx-3.95-amd64_linux.tar.xz /opt/st
+          tar -xvf /opt/st/upx-3.95-amd64_linux.tar.xz -C /opt
+          chmod 777 /opt/upx-3.95-amd64_linux/upx
+          cd /opt/natmap/bin
+          ${dir}-strip natmap     
+          /opt/upx-3.95-amd64_linux/upx --lzma --best natmap
