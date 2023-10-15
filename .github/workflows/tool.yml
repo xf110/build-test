@@ -31,7 +31,9 @@ jobs:
           ls 
           }
           fw=pa
-          if [ $fw="pa" ] then padavan
+          if [ $fw="pa" ] ; then
+          padavan
           fi
-          if [ $fw="op" ] then openwrt
+          if [ $fw="op" ] ; then
+          openwrt
           fi
