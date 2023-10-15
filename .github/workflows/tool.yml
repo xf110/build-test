@@ -21,11 +21,11 @@ jobs:
         env:
           fw: padavan
            if [ "$fw" = "padavan" ] ; then
-           dir=/opt/padavan/gcc/host/bin/mipsel-linux
+           dir1=/opt/padavan/gcc/host/bin/mipsel-linux
            fi
            if [ "$fw" = "openwrt" ] ; then
-           dir=/opt/openwrt/gcc/openwrt-toolchain-23.05.0-rc3-ramips-mt7621_gcc-12.3.0_musl.Linux-x86_64/toolchain-mipsel_24kc_gcc-12.3.0_musl/bin/mipsel-openwrt-linux-musl
-          dir: $dir
+           dir1=/opt/openwrt/gcc/openwrt-toolchain-23.05.0-rc3-ramips-mt7621_gcc-12.3.0_musl.Linux-x86_64/toolchain-mipsel_24kc_gcc-12.3.0_musl/bin/mipsel-openwrt-linux-musl
+          dir: ${dir1}
            fi
            
         run: |
@@ -56,9 +56,10 @@ jobs:
       - 
         name: 开始编译
         run: |  
-          #sudo chmod 777 -R /opt/${fw}/gcc
+          sudo chmod 777 -R /opt/${fw}/gcc
           export STAGING_DIR=/opt/padavan/gcc/host
-         
+          export PATH=$PATH:/opt/padavan/gcc/host/bin
+          export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/gcc/host/lib
           #make ENABLE_STATIC=1 CROSS_PREFIX=/opt/gcc/openwrt-toolchain-23.05.0-rc3-ramips-mt7621_gcc-12.3.0_musl.Linux-x86_64/toolchain-mipsel_24kc_gcc-12.3.0_musl/bin/mipsel-openwrt-linux-musl-
           make CROSS_PREFIX=${dir}-
 
