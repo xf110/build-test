@@ -65,8 +65,8 @@ jobs:
          
       
       
-          git clone https://github.com/xf110/tool/releases/download/1.0.0/upx-3.95-amd64_linux.tar.xz /opt/st
-          tar -xvf /opt/st/upx-3.95-amd64_linux.tar.xz -C /opt
+          wget -c https://github.com/xf110/tool/releases/download/1.0.0/upx-3.95-amd64_linux.tar.xz /opt
+          tar -xvf /opt/upx-3.95-amd64_linux.tar.xz -C /opt
           chmod 777 /opt/upx-3.95-amd64_linux/upx
           cd /opt/natmap/bin
           ${dir}-strip natmap     
