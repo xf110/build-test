@@ -5,7 +5,7 @@ on:
   workflow_dispatch
 env:
   TZ: Asia/Shanghai
-
+  fw: padavan
 jobs:
   
    build:
@@ -14,18 +14,22 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-           
+      
            
       - 
         name: 编译链下载
-        env:
-           fw: padavan
+       
       
            
            
         run: |
+          git clone --recursive https://github.com/heiher/natmap /opt/natmap
+          rm -rf /opt/natmap/hev-task-system
+          git clone https://github.com/heiher/hev-task-system /opt/natmap/hev-task-system
+      
+          
           padavan(){
-          wget -c https://github.com/xf110/tool/releases/download/1.0.0/host.zip -P /opt/padavan/gcc/
+          wget -c https://github.com/lmq8267/n2n-2.8.x/releases/download/toolchain/host.zip -P /opt/padavan/gcc/
           unzip /opt/padavan/gcc/host.zip -d /opt/padavan/gcc/
           dir=/opt/padavan/gcc/host/bin/mipsel-linux
           }
@@ -43,14 +47,11 @@ jobs:
           openwrt
           fi
       
-          git clone --recursive https://github.com/heiher/natmap /opt/natmap
-          rm -rf /opt/natmap/hev-task-system
-          git clone https://github.com/heiher/hev-task-system /opt/natmap/hev-task-system
-      
+         
           #sudo chmod 777 -R /opt/$fw/gcc
           export STAGING_DIR=/opt/padavan/gcc/host
           export PATH=$PATH:/opt/padavan/gcc/host/bin
-          export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/gcc/host/lib
+          export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/padavan/gcc/host/lib
           #make ENABLE_STATIC=1 CROSS_PREFIX=/opt/gcc/openwrt-toolchain-23.05.0-rc3-ramips-mt7621_gcc-12.3.0_musl.Linux-x86_64/toolchain-mipsel_24kc_gcc-12.3.0_musl/bin/mipsel-openwrt-linux-musl-
           make CROSS_PREFIX=${dir}-
 
