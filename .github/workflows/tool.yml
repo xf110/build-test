@@ -14,22 +14,29 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
+           fw=padavan
+           if [ "$fw" = "padavan" ] ; then
+           dir=/opt/padavan/gcc/host/bin/mipsel-linux
+           fi
+           if [ "$fw" = "openwrt" ] ; then
+           dir=/opt/openwrt/gcc/openwrt-toolchain-23.05.0-rc3-ramips-mt7621_gcc-12.3.0_musl.Linux-x86_64/toolchain-mipsel_24kc_gcc-12.3.0_musl/bin/mipsel-openwrt-linux-musl
+        
+           fi
       - 
         name: 编译链下载
         run: |
           padavan(){
           wget -c https://github.com/xf110/tool/releases/download/1.0.0/host.zip -P /opt/padavan/gcc/
           unzip /opt/padavan/gcc/host.zip -d /opt/padavan/gcc/
-          dir=/opt/padavan/gcc/host/bin/mipsel-linux
+          
           }
           
           openwrt(){
           wget -c https://github.com/xf110/tool/releases/download/1.0.0/openwrt-toolchain-23.05.0-rc3-ramips-mt7621_gcc-12.3.0_musl.Linux-x86_64.tar.xz -P /opt/openwrt/gcc/
           tar xf /opt/openwrt/gcc/mipsel-linux-uclibc-by-hanwckf.tar.gz -C /opt/openwrt/gcc/
-          cd /opt/openwrt/gcc
-          dir=/opt/openwrt/gcc/openwrt-toolchain-23.05.0-rc3-ramips-mt7621_gcc-12.3.0_musl.Linux-x86_64/toolchain-mipsel_24kc_gcc-12.3.0_musl/bin/mipsel-openwrt-linux-musl
+          
           }
-          export fw=padavan
+          
           if [ "$fw" = "padavan" ] ; then
           padavan
           fi
