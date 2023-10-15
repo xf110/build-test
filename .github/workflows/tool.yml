@@ -46,12 +46,19 @@ jobs:
           if [ "$fw" = "openwrt" ] ; then
           openwrt
           fi
+      - 
+        name: 编译
+       
       
+           
+           
+        run: |
          
           #sudo chmod 777 -R /opt/$fw/gcc
           export STAGING_DIR=/opt/padavan/gcc/host
           export PATH=$PATH:/opt/padavan/gcc/host/bin
           export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/padavan/gcc/host/lib
+          cd /opt/natmap/
           #make ENABLE_STATIC=1 CROSS_PREFIX=/opt/gcc/openwrt-toolchain-23.05.0-rc3-ramips-mt7621_gcc-12.3.0_musl.Linux-x86_64/toolchain-mipsel_24kc_gcc-12.3.0_musl/bin/mipsel-openwrt-linux-musl-
           make CROSS_PREFIX=${dir}-
 
