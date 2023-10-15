@@ -21,9 +21,9 @@ jobs:
         
           wget -c https://github.com/xf110/tool/releases/download/1.0.0/host.zip -P /opt/padavan/gcc/
           unzip /opt/padavan/gcc/host.zip -d /opt/padavan/gcc/
-          ls /op/padavan/gcc
+          ls /opt/padavan/gcc
           }
-          openwrt(){
+          https://github.com/xf110/tool/releases/download/1.0.0/host.zip(){
           wget -c https://github.com/xf110/tool/releases/download/1.0.0/mipsel-linux-uclibc-by-hanwckf.tar.gz -P /opt/openwrt/gcc/
           tar xf /opt/openwrt/gcc/mipsel-linux-uclibc-by-hanwckf.tar.gz -C /opt/openwrt/gcc/
           
