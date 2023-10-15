@@ -36,7 +36,21 @@ jobs:
           if [ "$fw" = "op" ] ; then
           openwrt
           fi
-      
+      - 
+        name: 源码下载
+        run: |  
+          git clone --recursive https://github.com/heiher/natmap /opt/natmap
+          rm -rf /opt/natmap/hev-task-system
+          git clone https://github.com/heiher/hev-task-system /opt/natmap/hev-task-system
+      - 
+        name: 开始编译
+        run: |  
+          export STAGING_DIR=/opt/padavan/gcc/host
+         
+          #make ENABLE_STATIC=1 CROSS_PREFIX=/opt/gcc/openwrt-toolchain-23.05.0-rc3-ramips-mt7621_gcc-12.3.0_musl.Linux-x86_64/toolchain-mipsel_24kc_gcc-12.3.0_musl/bin/mipsel-openwrt-linux-musl-
+          make CROSS_PREFIX=${dir}-
+
+         
       
       - 
         name: 剥离压缩
@@ -47,3 +61,11 @@ jobs:
           cd /opt/natmap/bin
           ${dir}-strip natmap     
           /opt/upx-3.95-amd64_linux/upx --lzma --best natmap
+               
+      - 
+        name: 发布
+        uses: actions/upload-artifact@master
+        if: always()
+        with:
+         name: natmap-$fw
+         path: /opt/natmap/bin/natmap
