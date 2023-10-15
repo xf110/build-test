@@ -18,40 +18,13 @@ jobs:
         name: 下载
         run: |
           
-          git clone https://github.com/lmq8267/cloudflared.git /opt/st
-          wget -c https://github.com/lmq8267/n2n-2.8.x/releases/download/toolchain/host.zip -P /opt/padavan/gcc/
-          unzip /opt/padavan/gcc/host.zip -d /opt/padavan/gcc/
+        
+          #wget -c https://github.com/xf110/tool/releases/download/1.0.0/mipsel-linux-uclibc-by-hanwckf.tar.gz -P /opt/padavan/gcc/
+          #unzip /opt/padavan/gcc/host.zip -d /opt/padavan/gcc/
       
-          wget -c https://github.com/lmq8267/n2n-2.8.x/releases/download/toolchain/openwrt-toolchain-23.05.0-rc3-ramips-mt7621_gcc-12.3.0_musl.Linux-x86_64.tar.xz -P /opt/openwrt/gcc/
-          tar xf /opt/openwrt/gcc/openwrt-toolchain-23.05.0-rc3-ramips-mt7621_gcc-12.3.0_musl.Linux-x86_64.tar.xz -C /opt/openwrt/gcc/
+          wget -c https://github.com/xf110/tool/releases/download/1.0.0/mipsel-linux-uclibc-by-hanwckf.tar.gz -P /opt/openwrt/gcc/
+          tar xf /opt/openwrt/gcc/*.tar.xz -C /opt/openwrt/gcc/
     
-          
-      - 
-        name: 发布
-        uses: actions/upload-artifact@master
-        if: always()
-        with:
-         name: strip
-         path: /opt/st/strip
-      - 
-        name: 发布
-        uses: actions/upload-artifact@master
-        if: always()
-        with:
-         name: upx
-         path: /opt/st/upx-3.95-amd64_linux.tar.xz
-      - 
-        name: 发布
-        uses: actions/upload-artifact@master
-        if: always()
-        with:
-         name: host
-         path: /opt/padavan/gcc/host/*.*
-      - 
-        name: 发布
-        uses: actions/upload-artifact@master
-        if: always()
-        with:
-         name: openwrt-toolchain-23.05.0-rc3-ramips-mt7621_gcc-12.3.0_musl.Linux-x86_64
-         path: /opt/openwrt/gcc/openwrt-toolchain-23.05.0-rc3-ramips-mt7621_gcc-12.3.0_musl.Linux-x86_64/*.*
-                
+          cd /opt/openwrt/gcc
+          ls -R
+  
