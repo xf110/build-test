@@ -25,7 +25,7 @@ jobs:
           }
           
           openwrt(){
-          wget -c https://github.com/xf110/tool/releases/download/1.0.0/mipsel-linux-uclibc-by-hanwckf.tar.gz -P /opt/openwrt/gcc/
+          wget -c https://github.com/xf110/tool/releases/download/1.0.0/openwrt-toolchain-23.05.0-rc3-ramips-mt7621_gcc-12.3.0_musl.Linux-x86_64.tar.xz -P /opt/openwrt/gcc/
           tar xf /opt/openwrt/gcc/mipsel-linux-uclibc-by-hanwckf.tar.gz -C /opt/openwrt/gcc/
           cd /opt/openwrt/gcc
           ls 
