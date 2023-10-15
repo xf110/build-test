@@ -21,7 +21,7 @@ jobs:
         
           wget -c https://github.com/xf110/tool/releases/download/1.0.0/host.zip -P /opt/padavan/gcc/
           unzip /opt/padavan/gcc/host.zip -d /opt/padavan/gcc/
-          ls /opt/padavan/gcc
+          ls /opt/padavan/gcc/
           }
           
           openwrt(){
