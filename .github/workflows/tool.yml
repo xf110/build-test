@@ -23,7 +23,7 @@ jobs:
            
            
         run: |
-          fw=padavan
+          fw=openwrt
           git clone --recursive https://github.com/heiher/natmap /opt/natmap
           rm -rf /opt/natmap/hev-task-system
           git clone https://github.com/heiher/hev-task-system /opt/natmap/hev-task-system
