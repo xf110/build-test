@@ -59,9 +59,10 @@ jobs:
           fw=openwrt
           if [ "$fw" = "padavan" ] ; then
           dir=${dirpadavan}
+          fi
           if [ "$fw" = "openwrt" ] ; then
           dir=${diropenwrt}
-          
+          fi
           #make ENABLE_STATIC=1 CROSS_PREFIX=/opt/gcc/openwrt-toolchain-23.05.0-rc3-ramips-mt7621_gcc-12.3.0_musl.Linux-x86_64/toolchain-mipsel_24kc_gcc-12.3.0_musl/bin/mipsel-openwrt-linux-musl-
           make CROSS_PREFIX=${dir}-
 
