@@ -6,7 +6,7 @@ on:
 env:
   TZ: Asia/Shanghai
   #选择平台
-  fw: padavan 
+  fw: openwrt
 jobs:
 
    build:
