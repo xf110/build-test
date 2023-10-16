@@ -5,6 +5,7 @@ on:
   workflow_dispatch
 env:
   TZ: Asia/Shanghai
+  #选择平台
   fw: padavan 
 jobs:
 
@@ -29,9 +30,8 @@ jobs:
           git clone --recursive https://github.com/heiher/natmap /opt/natmap
           rm -rf /opt/natmap/hev-task-system
           git clone https://github.com/heiher/hev-task-system /opt/natmap/hev-task-system
-          #选择平台
-          #fw=openwrt
-          echo "fw=padavan" >> $GITHUB_ENV
+          
+          
           #下载编译链
           if [ ${{env.fw}} = "padavan" ] ; then
           wget -c https://github.com/xf110/tool/releases/download/1.0.0/host.zip -P /opt/padavan/gcc/
@@ -41,7 +41,7 @@ jobs:
           fi
           
           
-          if [ "$fw" = "openwrt" ] ; then
+          if [ ${{env.fw}} = "openwrt" ] ; then
           wget -c https://github.com/xf110/tool/releases/download/1.0.0/openwrt-toolchain-23.05.0-rc3-ramips-mt7621_gcc-12.3.0_musl.Linux-x86_64.tar.xz -P /opt/openwrt/gcc/
           tar xf /opt/openwrt/gcc/openwrt-toolchain-23.05.0-rc3-ramips-mt7621_gcc-12.3.0_musl.Linux-x86_64.tar.xz -C /opt/openwrt/gcc/
           echo "dir=/opt/openwrt/gcc/openwrt-toolchain-23.05.0-rc3-ramips-mt7621_gcc-12.3.0_musl.Linux-x86_64/toolchain-mipsel_24kc_gcc-12.3.0_musl/bin/mipsel-openwrt-linux-musl" >> $GITHUB_ENV
