@@ -31,7 +31,7 @@ jobs:
           padavan(){
           wget -c https://github.com/xf110/tool/releases/download/1.0.0/buildroot-2023.02.5-mipsel-uclibc.zip -P /opt/padavan/gcc/
           unzip /opt/padavan/gcc/buildroot-2023.02.5-mipsel-uclibc.zip -d /opt/padavan/gcc/
-          dir=/opt/padavan/gcc/host/bin/mipsel-linux
+          dir=/opt/padavan/gcc/buildroot-2023.02.5-mipsel-uclibc/bin/mipsel-linux
           }
           
           openwrt(){
