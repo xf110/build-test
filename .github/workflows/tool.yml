@@ -24,22 +24,26 @@ jobs:
            
         run: |
           
+          #下载源码
           git clone --recursive https://github.com/heiher/natmap /opt/natmap
           rm -rf /opt/natmap/hev-task-system
           git clone https://github.com/heiher/hev-task-system /opt/natmap/hev-task-system
-      
-          
-          
+          #选择平台
+          echo "fw=openwrt" >> $GITHUB_ENV
+          #下载编译链
+          if [ "${{env.fw}}" = "padavan" ] ; then
           wget -c https://github.com/xf110/tool/releases/download/1.0.0/host.zip -P /opt/padavan/gcc/
           unzip /opt/padavan/gcc/host.zip -d /opt/padavan/gcc/
-          sudo chmod 777 -R /opt/padavan/gcc
+          #sudo chmod 777 -R /opt/padavan/gcc
+          echo "dir=/opt/padavan/gcc/host/bin/mipsel-linux" >> $GITHUB_ENV
+          fi
           
           
-          
-         
+          if [ "${{env.fw}}" = "openwrt" ] ; then
           wget -c https://github.com/xf110/tool/releases/download/1.0.0/openwrt-toolchain-23.05.0-rc3-ramips-mt7621_gcc-12.3.0_musl.Linux-x86_64.tar.xz -P /opt/openwrt/gcc/
           tar xf /opt/openwrt/gcc/openwrt-toolchain-23.05.0-rc3-ramips-mt7621_gcc-12.3.0_musl.Linux-x86_64.tar.xz -C /opt/openwrt/gcc/
-          
+          echo "dir=/opt/openwrt/gcc/openwrt-toolchain-23.05.0-rc3-ramips-mt7621_gcc-12.3.0_musl.Linux-x86_64/toolchain-mipsel_24kc_gcc-12.3.0_musl/bin/mipsel-openwrt-linux-musl" >> $GITHUB_ENV
+          fi
          
           
          
@@ -56,16 +60,16 @@ jobs:
           #export PATH=$PATH:/opt/padavan/gcc/host/bin
           #export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/padavan/gcc/host/lib
           cd /opt/natmap/
-          fw=openwrt
-          echo "fw=openwrt" >> $GITHUB_ENV
-          if [ "$fw" = "padavan" ] ; then
-          dir=/opt/padavan/gcc/host/bin/mipsel-linux
+
+          
+          if [ "${{env.fw}}" = "padavan" ] ; then
+          
           fi
-          if [ "$fw" = "openwrt" ] ; then
+          if [ "${{env.fw}}" = "openwrt" ] ; then
           dir=/opt/openwrt/gcc/openwrt-toolchain-23.05.0-rc3-ramips-mt7621_gcc-12.3.0_musl.Linux-x86_64/toolchain-mipsel_24kc_gcc-12.3.0_musl/bin/mipsel-openwrt-linux-musl
           fi
           #make ENABLE_STATIC=1 CROSS_PREFIX=/opt/gcc/openwrt-toolchain-23.05.0-rc3-ramips-mt7621_gcc-12.3.0_musl.Linux-x86_64/toolchain-mipsel_24kc_gcc-12.3.0_musl/bin/mipsel-openwrt-linux-musl-
-          make CROSS_PREFIX=${dir}-
+          make CROSS_PREFIX=${{env.dir}}-
 
          
       
@@ -74,7 +78,7 @@ jobs:
           tar -xvf /opt/upx-3.95-amd64_linux.tar.xz -C /opt
           chmod 777 /opt/upx-3.95-amd64_linux/upx
           cd /opt/natmap/bin
-          #/opt/padavan/gcc/host/bin/mipsel-linux-strip natmap     
+          {{env.dir}}-strip natmap     
           /opt/upx-3.95-amd64_linux/upx --lzma --best natmap
                
       - 
@@ -82,5 +86,5 @@ jobs:
         uses: actions/upload-artifact@master
         if: always()
         with:
-         name: natmap-${fw}
+         name: natmap-${{env.fw}}
          path: /opt/natmap/bin/natmap
