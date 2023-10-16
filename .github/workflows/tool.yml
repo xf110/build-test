@@ -5,7 +5,7 @@ on:
   workflow_dispatch
 env:
   TZ: Asia/Shanghai
-  fw: padavan
+  
 jobs:
   
    build:
@@ -23,6 +23,7 @@ jobs:
            
            
         run: |
+          fw=padavan
           git clone --recursive https://github.com/heiher/natmap /opt/natmap
           rm -rf /opt/natmap/hev-task-system
           git clone https://github.com/heiher/hev-task-system /opt/natmap/hev-task-system
@@ -78,5 +79,5 @@ jobs:
         uses: actions/upload-artifact@master
         if: always()
         with:
-         name: natmap-"$fw"
+         name: natmap-$fw
          path: /opt/natmap/bin/natmap
