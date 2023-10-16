@@ -81,5 +81,5 @@ jobs:
         uses: actions/upload-artifact@master
         if: always()
         with:
-         name: natmap-${fw}
+         name: natmap-$fw
          path: /opt/natmap/bin/natmap
