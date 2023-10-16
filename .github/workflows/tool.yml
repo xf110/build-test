@@ -70,7 +70,7 @@ jobs:
           tar -xvf /opt/upx-3.95-amd64_linux.tar.xz -C /opt
           chmod 777 /opt/upx-3.95-amd64_linux/upx
           cd /opt/natmap/bin
-          /opt/padavan/gcc/host/bin/mipsel-linux-strip natmap     
+          #/opt/padavan/gcc/host/bin/mipsel-linux-strip natmap     
           /opt/upx-3.95-amd64_linux/upx --lzma --best natmap
                
       - 
