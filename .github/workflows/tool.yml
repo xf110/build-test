@@ -38,7 +38,7 @@ jobs:
           openwrt(){
           wget -c https://github.com/xf110/tool/releases/download/1.0.0/openwrt-toolchain-23.05.0-rc3-ramips-mt7621_gcc-12.3.0_musl.Linux-x86_64.tar.xz -P /opt/openwrt/gcc/
           tar xf /opt/openwrt/gcc/mipsel-linux-uclibc-by-hanwckf.tar.gz -C /opt/openwrt/gcc/
-          dir: /opt/openwrt/gcc/openwrt-toolchain-23.05.0-rc3-ramips-mt7621_gcc-12.3.0_musl.Linux-x86_64/toolchain-mipsel_24kc_gcc-12.3.0_musl/bin/mipsel-openwrt-linux-musl
+          dir=/opt/openwrt/gcc/openwrt-toolchain-23.05.0-rc3-ramips-mt7621_gcc-12.3.0_musl.Linux-x86_64/toolchain-mipsel_24kc_gcc-12.3.0_musl/bin/mipsel-openwrt-linux-musl
           }
           
           if [ "$fw" = "padavan" ] ; then
@@ -78,5 +78,5 @@ jobs:
         uses: actions/upload-artifact@master
         if: always()
         with:
-         name: natmap-${fw}
+         name: natmap-$fw
          path: /opt/natmap/bin/natmap
