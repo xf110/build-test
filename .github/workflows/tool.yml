@@ -29,7 +29,7 @@ jobs:
           rm -rf /opt/natmap/hev-task-system
           git clone https://github.com/heiher/hev-task-system /opt/natmap/hev-task-system
           #选择平台
-          echo "fw=openwrt" >> $GITHUB_ENV
+          echo "fw=padavan" >> $GITHUB_ENV
           #下载编译链
           if [ "${{env.fw}}" = "padavan" ] ; then
           wget -c https://github.com/xf110/tool/releases/download/1.0.0/host.zip -P /opt/padavan/gcc/
