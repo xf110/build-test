@@ -32,7 +32,7 @@ jobs:
           #fw=openwrt
           echo "fw=padavan" >> $GITHUB_ENV
           #下载编译链
-          if [ ${{env.fw}} = padavan ] ; then
+          if [ ${{env.fw}} = "padavan" ] ; then
           wget -c https://github.com/xf110/tool/releases/download/1.0.0/host.zip -P /opt/padavan/gcc/
           unzip /opt/padavan/gcc/host.zip -d /opt/padavan/gcc/
           sudo chmod 777 -R /opt/padavan/gcc
