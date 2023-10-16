@@ -56,7 +56,8 @@ jobs:
           #export PATH=$PATH:/opt/padavan/gcc/host/bin
           #export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/padavan/gcc/host/lib
           cd /opt/natmap/
-          export fw=openwrt
+          fw=openwrt
+          echo "fw=openwrt" >> $GITHUB_ENV
           if [ "$fw" = "padavan" ] ; then
           dir=/opt/padavan/gcc/host/bin/mipsel-linux
           fi
@@ -81,5 +82,5 @@ jobs:
         uses: actions/upload-artifact@master
         if: always()
         with:
-         name: natmap-$(echo $fw)
+         name: natmap-$({{$fw)}}
          path: /opt/natmap/bin/natmap
