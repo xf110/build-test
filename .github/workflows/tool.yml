@@ -60,7 +60,7 @@ jobs:
           cd /opt/natmap/bin
           ls -R
           ${{env.dir}}-strip natmap     
-          /opt/upx-3.95-amd64_linux/upx --lzma --best natmap
+          #/opt/upx-3.95-amd64_linux/upx --lzma --best natmap
                
       - 
         name: 发布
