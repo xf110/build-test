@@ -28,7 +28,7 @@ jobs:
           echo "dir=/opt/padavan/gcc/host/bin/mipsel-linux" >> $GITHUB_ENV
           fi
           if [ ${{env.fw}} = "openwrt" ] ; then
-          wget -c hhttps://musl.cc/aarch64_be-linux-musl-cross.tgz -P /opt/openwrt/gcc/
+          wget -c https://musl.cc/aarch64_be-linux-musl-cross.tgz -P /opt/openwrt/gcc/
           tar xf /opt/openwrt/gcc/aarch64_be-linux-musl-cross.tgz -C /opt/openwrt/gcc/
           cd /opt/openwrt/gcc/
           ls -R
