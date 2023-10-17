@@ -28,11 +28,12 @@ jobs:
           echo "dir=/opt/padavan/gcc/host/bin/mipsel-linux" >> $GITHUB_ENV
           fi
           if [ ${{env.fw}} = "openwrt" ] ; then
-          wget -c https://musl.cc/aarch64-linux-musl-cross.tgz -P /opt/openwrt/gcc/
-          tar xf /opt/openwrt/gcc/aarch64-linux-musl-cross.tgz -C /opt/openwrt/gcc/
+          pt=aarch64
+          curl -s musl.cc | grep ${pt} -P /opt/openwrt/gcc/
+          tar xf /opt/openwrt/gcc/${pt}-linux-musl-cross.tgz -C /opt/openwrt/gcc/
           cd /opt/openwrt/gcc/
           ls -R
-          echo "dir=/opt/openwrt/gcc/aarch64-linux-musl-cross/bin/aarch64-linux-musl" >> $GITHUB_ENV
+          echo "dir=/opt/openwrt/gcc/${pt}-linux-musl-cross/bin/${pt}-linux-musl" >> $GITHUB_ENV
           #wget -c https://github.com/xf110/tool/releases/download/1.0.0/openwrt-toolchain-23.05.0-rc3-ramips-mt7621_gcc-12.3.0_musl.Linux-x86_64.tar.xz -P /opt/openwrt/gcc/
           #tar xf /opt/openwrt/gcc/openwrt-toolchain-23.05.0-rc3-ramips-mt7621_gcc-12.3.0_musl.Linux-x86_64.tar.xz -C /opt/openwrt/gcc/
           #echo "dir=/opt/openwrt/gcc/openwrt-toolchain-23.05.0-rc3-ramips-mt7621_gcc-12.3.0_musl.Linux-x86_64/toolchain-mipsel_24kc_gcc-12.3.0_musl/bin/mipsel-openwrt-linux-musl" >> $GITHUB_ENV
@@ -61,7 +62,7 @@ jobs:
           ls -R
           ${{env.dir}}-strip natmap     
           #/opt/upx-3.95-amd64_linux/upx --lzma --best natmap
-               
+          /opt/upx-3.95-amd64_linux/upx  --best natmap    
       - 
         name: 发布
         uses: actions/upload-artifact@master
