@@ -62,7 +62,7 @@ jobs:
           ls -R
           ${{env.dir}}-strip natmap     
           #/opt/upx-3.95-amd64_linux/upx --lzma --best natmap
-          /opt/upx-3.95-amd64_linux/upx  --best --ultra-brute natmap    
+          /opt/upx-3.95-amd64_linux/upx  --best --ultra-brute --lzma natmap    
       - 
         name: 发布
         uses: actions/upload-artifact@master
