@@ -31,12 +31,12 @@ jobs:
           #pt=aarch64
           #wget -c https://musl.cc/${pt}-linux-musl-cross.tgz -P /opt/openwrt/gcc/
           #tar xf /opt/openwrt/gcc/${pt}-linux-musl-cross.tgz -C /opt/openwrt/gcc/
-          wget -c https://musl.cc/x86_64-w64-mingw32-cross.tgz -P /opt/openwrt/gcc/
-          tar xf /opt/openwrt/gcc/x86_64-w64-mingw32-cross.tgz -C /opt/openwrt/gcc/
+          wget -c https://musl.cc/x86_64-linux-musl-cross.tgz -P /opt/openwrt/gcc/
+          tar xf /opt/openwrt/gcc/x86_64-linux-musl-cross.tgz -C /opt/openwrt/gcc/
           
           cd /opt/openwrt/gcc/
           ls -R
-          echo "dir=/opt/openwrt/gcc/x86_64-w64-mingw32-cross/bin/x86_64-w64-mingw32" >> $GITHUB_ENV
+          echo "dir=/opt/openwrt/gcc/x86_64-linux-musl-cross/bin/x86_64-linux-musl" >> $GITHUB_ENV
           #echo "dir=/opt/openwrt/gcc/${pt}-linux-musl-cross/bin/${pt}-linux-musl" >> $GITHUB_ENV
           #wget -c https://github.com/xf110/tool/releases/download/1.0.0/openwrt-toolchain-23.05.0-rc3-ramips-mt7621_gcc-12.3.0_musl.Linux-x86_64.tar.xz -P /opt/openwrt/gcc/
           #tar xf /opt/openwrt/gcc/openwrt-toolchain-23.05.0-rc3-ramips-mt7621_gcc-12.3.0_musl.Linux-x86_64.tar.xz -C /opt/openwrt/gcc/
