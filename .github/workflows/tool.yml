@@ -70,6 +70,5 @@ jobs:
         uses: actions/upload-artifact@master
         if: always()
         with:
-         if [ ${{env.fw}} = "padavan" ] ; then name: natmap-${{env.fw}} fi
-         if [ ${{env.fw}} = "openwrt" ] ; then name: natmap-${{env.pt}} fi
-         path: /opt/natmap/bin/natmap
+          name: natmap-${{env.fw}} fi
+          path: /opt/natmap/bin/natmap
