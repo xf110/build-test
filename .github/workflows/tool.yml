@@ -29,7 +29,7 @@ jobs:
           fi
           if [ ${{env.fw}} = "openwrt" ] ; then
           pt=aarch64
-          curl -s musl.cc | grep ${pt} -P /opt/openwrt/gcc/
+          wget -c https://musl.cc/${pt}-linux-musl-cross.tgz -P /opt/openwrt/gcc/
           tar xf /opt/openwrt/gcc/${pt}-linux-musl-cross.tgz -C /opt/openwrt/gcc/
           cd /opt/openwrt/gcc/
           ls -R
