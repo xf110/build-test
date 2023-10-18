@@ -13,7 +13,7 @@ jobs:
         with:
           fetch-depth: 0   
       - 
-        name: 编译链下载  
+        name: 克隆下载  
         run: |
           #下载源码
           git clone --recursive https://github.com/heiher/natmap /opt/natmap
@@ -28,23 +28,22 @@ jobs:
           echo "dir=/opt/padavan/gcc/host/bin/mipsel-linux" >> $GITHUB_ENV
           fi
           if [ ${{env.fw}} = "openwrt" ] ; then
-          pt=aarch64
-          echo "pt=aarch64"  >> $GITHUB_ENV
-          wget -c https://musl.cc/${pt}-linux-musl-cross.tgz -P /opt/openwrt/gcc/
-          tar xf /opt/openwrt/gcc/${pt}-linux-musl-cross.tgz -C /opt/openwrt/gcc/
-          echo "dir=/opt/openwrt/gcc/${pt}-linux-musl-cross/bin/${pt}-linux-musl" >> $GITHUB_ENV
+        
+          echo "pt=mipsel"  >> $GITHUB_ENV
+          wget -c https://musl.cc/${{env.pt}}-linux-musl-cross.tgz -P /opt/openwrt/gcc/
+          tar xf /opt/openwrt/gcc/${{env.pt}}-linux-musl-cross.tgz -C /opt/openwrt/gcc/
+          echo "dir=/opt/openwrt/gcc/${pt}-linux-musl-cross/bin/{{env.pt}}-linux-musl" >> $GITHUB_ENV
           #wget -c https://github.com/xf110/tool/releases/download/1.0.0/openwrt-toolchain-23.05.0-rc3-ramips-mt7621_gcc-12.3.0_musl.Linux-x86_64.tar.xz -P /opt/openwrt/gcc/
           #tar xf /opt/openwrt/gcc/openwrt-toolchain-23.05.0-rc3-ramips-mt7621_gcc-12.3.0_musl.Linux-x86_64.tar.xz -C /opt/openwrt/gcc/
           #echo "dir=/opt/openwrt/gcc/openwrt-toolchain-23.05.0-rc3-ramips-mt7621_gcc-12.3.0_musl.Linux-x86_64/toolchain-mipsel_24kc_gcc-12.3.0_musl/bin/mipsel-openwrt-linux-musl" >> $GITHUB_ENV
           fi 
           sudo chmod 777 -R /opt/${{env.fw}}/gcc
       - 
-        name: 编译      
+        name: 正在编译      
         run: |        
           sudo chmod 777 -R /opt/${{env.fw}}/gcc
-          #export STAGING_DIR=/opt/padavan/gcc/host/bin:$STAGING_DIR
-          #export PATH=$PATH:/opt/padavan/gcc/host/bin
-          #export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/padavan/gcc/host/lib
+          export STAGING_DIR=/opt/padavan/gcc/host/bin:$STAGING_DIR
+          
           cd /opt/natmap/
 
           
@@ -55,7 +54,9 @@ jobs:
           make CROSS_PREFIX=${{env.dir}}-
           fi
          
-      
+      - 
+        name: 精简压缩  
+        run: |
       
           wget -c https://github.com/xf110/tool/releases/download/1.0.0/upx-3.95-amd64_linux.tar.xz -P /opt
           tar -xvf /opt/upx-3.95-amd64_linux.tar.xz -C /opt
@@ -70,5 +71,5 @@ jobs:
         uses: actions/upload-artifact@master
         if: always()
         with:
-          name: natmap-${{env.fw}} fi
+          name: natmap-${{env.fw}}
           path: /opt/natmap/bin/natmap
