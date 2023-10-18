@@ -5,6 +5,7 @@ env:
   TZ: Asia/Shanghai
   #选择平台
   fw: openwrt
+  pt: mipsel
 jobs:
    build:
     runs-on: ubuntu-latest
@@ -29,7 +30,7 @@ jobs:
           fi
           if [ ${{env.fw}} = "openwrt" ] ; then
         
-          echo "pt=mipsel"  >> $GITHUB_ENV
+          #echo "pt=mipsel"  >> $GITHUB_ENV
           wget -c https://musl.cc/${{env.pt}}-linux-musl-cross.tgz -P /opt/openwrt/gcc/
           tar xf /opt/openwrt/gcc/${{env.pt}}-linux-musl-cross.tgz -C /opt/openwrt/gcc/
           echo "dir=/opt/openwrt/gcc/${pt}-linux-musl-cross/bin/{{env.pt}}-linux-musl" >> $GITHUB_ENV
