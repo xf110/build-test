@@ -42,7 +42,7 @@ jobs:
         name: 编译      
         run: |        
           sudo chmod 777 -R /opt/${{env.fw}}/gcc
-          #export STAGING_DIR=/opt/padavan/gcc/host
+          #export STAGING_DIR=/opt/padavan/gcc/host/bin:$STAGING_DIR
           #export PATH=$PATH:/opt/padavan/gcc/host/bin
           #export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/padavan/gcc/host/lib
           cd /opt/natmap/
