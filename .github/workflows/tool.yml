@@ -48,7 +48,7 @@ jobs:
 
           CC=${{env.dir}}-gcc
           if [ ${{env.fw}} = "openwrt" ] ; then
-          make
+          make CFLAG=-static
           #make ENABLE_STATIC=1 CROSS_PREFIX=${{env.dir}}-
           fi
           if [ ${{env.fw}} = "padavan" ] ; then
