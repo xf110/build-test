@@ -17,9 +17,8 @@ jobs:
         name: 克隆下载  
         run: |
           #下载源码
-          git clone --recursive https://github.com/heiher/natmap /opt/natmap
-          rm -rf /opt/natmap/hev-task-system
-          git clone https://github.com/heiher/hev-task-system /opt/natmap/hev-task-system
+          git clone https://github.com/darkk/redsocks /opt/redsocks
+          
           
           #下载编译链
           if [ ${{env.fw}} = "padavan" ] ; then
@@ -43,13 +42,14 @@ jobs:
         name: 正在编译      
         run: |        
           sudo chmod 777 -R /opt/${{env.fw}}/gcc
-          export STAGING_DIR=/opt/padavan/gcc/host/bin:$STAGING_DIR
+          export STAGING_DIR=/opt/padavan/gcc/host/bin
           
-          cd /opt/natmap/
+          cd /opt/redsocks
 
-          
+          CC=${{env.dir}}-gcc
           if [ ${{env.fw}} = "openwrt" ] ; then
-          make ENABLE_STATIC=1 CROSS_PREFIX=${{env.dir}}-
+          make
+          #make ENABLE_STATIC=1 CROSS_PREFIX=${{env.dir}}-
           fi
           if [ ${{env.fw}} = "padavan" ] ; then
           make CROSS_PREFIX=${{env.dir}}-
