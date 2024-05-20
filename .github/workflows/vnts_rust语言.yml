@@ -1,0 +1,55 @@
+name: vnts
+on:
+  workflow_dispatch:
+env:
+  TZ: Asia/Shanghai
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - name: aarch64-unknown-linux-musl
+            tool: aarch64-linux-musl
+            rv: 1.78
+          - name: mipsel-unknown-linux-musl
+            tool: mipsel-linux-musl
+            rv: 1.71.1
+          - name: x86_64-unknown-linux-musl
+            tool: x86_64-linux-musl
+            rv: 1.78
+    steps:
+      -
+        name: 检查代码仓库
+        uses: actions/checkout@v3      
+      - 
+        name: 编译
+        run: |
+          sudo mkdir -p /opt/x-tools
+          wget -q https://musl.cc/${{ matrix.tool }}-cross.tgz
+          sudo tar xvf ${{ matrix.tool }}-cross.tgz -C /opt/x-tools
+          #####安装rustup#######
+          rustup install ${{ matrix.rv }}
+          rustup default ${{ matrix.rv }}
+          #####此版本rustup支持的架构列表#####
+          rustup target list
+          #####添加架构#####
+          rustup target add ${{ matrix.name }}
+          cat >>~/.cargo/config <<EOF
+          [target.${{ matrix.name }}]
+          linker = "/opt/x-tools/${{ matrix.tool }}-cross/bin/${{ matrix.tool }}-gcc"
+          rustflags = ["-C", "target-feature=+crt-static","-C", "strip=symbols"]
+          EOF
+          git clone --recursive https://github.com/lbl8603/vnts
+          cd vnts
+          cargo clean
+          cargo build --package vnts --target=${{ matrix.name }} --release
+          
+          upx --lzma --best target/${{ matrix.name }}/release/vnts     
+      - 
+        name: 上传
+        uses: actions/upload-artifact@master
+        if: always()
+        with:
+         name: vnts_1.2.9_${{ matrix.name }}
+         path: vnts/target/${{ matrix.name }}/release/vnts
