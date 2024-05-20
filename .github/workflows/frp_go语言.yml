@@ -61,10 +61,11 @@ jobs:
           sudo apt-get install -y upx-ucl
           upx --best --ultra-brute ${{ matrix.SORC }}${{ matrix.HOUZHUI }}
       - 
-        name: 发布
+        name: 上传
         uses: actions/upload-artifact@master
         if: always()
         with:
          name: ${{ matrix.SORC }}_${{ matrix.GOARCH }}_${{ matrix.GOOS }}
          path: frp/cmd/${{ matrix.SORC }}/${{ matrix.SORC }}${{ matrix.HOUZHUI }}
+     
       
