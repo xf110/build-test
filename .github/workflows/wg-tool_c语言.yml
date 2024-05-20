@@ -1,0 +1,58 @@
+name: wg-tool
+on:
+  workflow_dispatch:
+env:
+  TZ: Asia/Shanghai
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - name: arm64
+            tool: aarch64-linux-musl
+          - name: mipsel
+            tool: mipsel-linux-musl
+          - name: amd64
+            tool: x86_64-linux-musl
+    steps:
+      -
+        name: 检查代码仓库
+        uses: actions/checkout@main
+      - 
+        name: 下载源码并编译${{ matrix.name }}
+        run: |
+          ##########建立编译链目录，下载交叉编译链并解压##########
+          sudo mkdir -p /opt/x-tools
+          wget -q https://musl.cc/${{ matrix.tool }}-cross.tgz
+          sudo tar xvf ${{ matrix.tool }}-cross.tgz -C /opt/x-tools
+          
+          ##########下载源码##########
+          #克隆源码
+          git clone --quiet https://github.com/WireGuard/wireguard-tools
+          if [ $? -ne 0 ]; then
+              echo "克隆失败"
+          fi
+          cd wireguard-tools/src
+          export CFLAGS="-static"
+          export LDFLAGS="-static"
+          export CC=/opt/x-tools/${{ matrix.tool }}-cross/bin/${{ matrix.tool }}-gcc
+          #定义编译器位置
+          make
+          #upx --best --ultra-brute wg
+          mv wg wg_${{ matrix.name }}
+      - 
+        name: 上传
+
+        uses: actions/upload-artifact@master
+        if: always()
+        with:
+         name: wg-${{ matrix.name }}
+         path: wireguard-tools/src/wg_${{ matrix.name }}
+      - name: 发布
+        uses: ncipollo/release-action@main
+        with:
+          tag: wg-tool
+          artifacts: wireguard-tools/src/wg_${{ matrix.name }}
+          allowUpdates: true
+          omitBodyDuringUpdate: true
