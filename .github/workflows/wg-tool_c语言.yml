@@ -51,12 +51,9 @@ jobs:
          path: wireguard-tools/src/wg_${{ matrix.name }}
       - name: 发布
         uses: ncipollo/release-action@main
-        env:
-          GITHUB_TOKEN: ${{ secrets.test }}
         with:
-          
           tag: wg-tool
           artifacts: wireguard-tools/src/wg_${{ matrix.name }}
-          
+          token: ${{ secrets.test }}
           allowUpdates: true
           omitBodyDuringUpdate: true
