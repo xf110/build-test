@@ -60,18 +60,8 @@ jobs:
          path: n2n-2.8.x/build/edge_${{ matrix.name }}
       
       
-      - name: 发布
-        uses: softprops/action-gh-release@v1
+      - name: upload release
+        uses: softprops/action-gh-release@v2
         with:
-          token: ${{ secrets.c8 }}
-          body: |
-           >
-
-           
-           
-           编译测试
-           
-          
-          tag_name: 精简测试多线程版
-          files: |
+         files: |
              n2n-2.8.x/build/edge_${{ matrix.name }}
