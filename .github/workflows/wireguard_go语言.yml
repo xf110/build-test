@@ -1,0 +1,55 @@
+name: wireguard-go
+on:
+  workflow_dispatch:
+env:
+  TZ: Asia/Shanghai
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - GOARCH: arm64
+            GOOS: linux
+          - GOARCH: mipsle
+            GOOS: linux
+            GOMIPS: softfloat
+          - GOARCH: amd64
+            GOOS: linux
+          - GOARCH: amd64
+            GOOS: windows
+            HOUZHUI: .exe
+    steps:
+      -
+        name: 安装go
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.22
+      -
+        name: 检查代码仓库
+        uses: actions/checkout@v3
+      - 
+        name: 下载
+        run: |
+          #克隆源码
+          git clone --recursive https://git.zx2c4.com/wireguard-go
+
+      - 
+        name: 编译     
+        run: |  
+          cd wireguard-go
+          export GOOS=${{ matrix.GOOS }}
+          export GOARCH=${{ matrix.GOARCH }}
+          export CGO_ENABLED=0
+          export GOMIPS=${{ matrix.GOMIPS }}
+          go build -ldflags="-s -v" -o wireguard-go-${{ matrix.GOARCH }}${{ matrix.HOUZHUI }}
+          
+          upx --best --ultra-brute wireguard-go-${{ matrix.GOARCH }}${{ matrix.HOUZHUI }}
+      - 
+        name: 发布
+        uses: actions/upload-artifact@master
+        if: always()
+        with:
+         name: ${{ matrix.GOARCH }}_${{ matrix.GOOS }}
+         path: wireguard-go/wireguard-go-${{ matrix.GOARCH }}${{ matrix.HOUZHUI }}
+      
