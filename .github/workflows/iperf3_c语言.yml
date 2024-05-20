@@ -1,0 +1,51 @@
+name: 编译iperf3通用版
+on:
+  workflow_dispatch
+env:
+  TZ: Asia/Shanghai
+jobs:
+   build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - name: aarch64-linux
+            tool: aarch64-unknown-linux-musl
+          - name: mipsel-linux
+            tool: mipsel-unknown-linux-musl
+          - name: x86_64-linux
+            tool: x86_64-multilib-linux-musl
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          submodules: true
+      - name: Build ${{ matrix.name }}
+        run: |
+          ##########建立编译链目录，下载交叉编译链并解压##########
+          sudo mkdir -p /opt/x-tools
+          wget -q https://github.com/musl-cross/musl-cross/releases/download/20240317/${{ matrix.tool }}.tgz
+          sudo tar xvf ${{ matrix.tool }}.tgz -C /opt/x-tools
+          sudo chmod +x upx3.95
+          ##########下载源码##########
+          git clone --recursive https://github.com/esnet/iperf
+          cd iperf
+          ##########开始静态编译##########
+          export CC=/opt/x-tools/${{ matrix.tool }}/bin/${{ matrix.tool }}-gcc
+          /opt/x-tools/${{ matrix.tool }}/bin/${{ matrix.tool }}-gcc --target-help
+          ./bootstrap.sh
+          ./configure --help
+          ./configure --enable-static-bin --host=${{ matrix.name }} --without-sctp --without-openssl
+          make 
+          ##########对编译的软件极限压缩##########
+          
+          ../upx3.95  --best --ultra-brute src/iperf3
+          
+      - 
+        name: 上传
+        uses: actions/upload-artifact@master
+        if: always()
+        with:
+          name: iperf3-linux-${{ matrix.name }}
+          path: iperf/src/iperf3
