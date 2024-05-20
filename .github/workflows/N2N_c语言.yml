@@ -26,11 +26,12 @@ jobs:
           sudo mkdir -p /opt/x-tools
           wget -q https://musl.cc/${{ matrix.tool }}-cross.tgz
           sudo tar xvf ${{ matrix.tool }}-cross.tgz -C /opt/x-tools
+          #给upx3.95赋予执行权限
           sudo chmod +x upx3.95
           ##########下载源码##########
           #克隆源码
           git clone --recursive https://github.com/xf110/n2n-2.8.x 
-          
+          #进入编译目录
           cd n2n-2.8.x
           #--------自定义编译选项，要阅读CMakeLists.txt调整参数---------------------------
           #关闭加密
@@ -48,10 +49,10 @@ jobs:
           /opt/x-tools/${{ matrix.tool }}-cross/bin/${{ matrix.tool }}-strip edge
           #压缩###尽量不要压缩
           ../../upx3.95 --best --ultra-brute edge
+          #改名
           mv edge edge_${{ matrix.name }}
       - 
         name: 上传
-
         uses: actions/upload-artifact@master
         if: always()
         with:
