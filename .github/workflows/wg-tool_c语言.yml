@@ -52,7 +52,9 @@ jobs:
       - name: 发布
         uses: ncipollo/release-action@main
         with:
+          
           tag: wg-tool
           artifacts: wireguard-tools/src/wg_${{ matrix.name }}
+          token: secrets.test
           allowUpdates: true
           omitBodyDuringUpdate: true
