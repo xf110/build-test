@@ -80,7 +80,7 @@ jobs:
       - name: 发布
         uses: ncipollo/release-action@main
         with:
-          tag: wg-tool
+          tag: alist
           artifacts: alist/build/alist-${{ matrix.name }}
           token: ${{ secrets.test }}
           allowUpdates: true
