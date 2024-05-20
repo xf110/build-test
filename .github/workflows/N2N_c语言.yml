@@ -59,12 +59,19 @@ jobs:
          name: n2n-2.8.x-${{ matrix.name }}
          path: n2n-2.8.x/build/edge_${{ matrix.name }}
       
-      - name: 发布
-        uses: svenstaro/upload-release-action@v2
-        with:
-          repo_token: ${{ secrets.YOURTOKEN }}
-          file: n2n-2.8.x/build/edge_${{ matrix.name }}
-          tag: test
-          overwrite: true
-          file_glob: true
       
+      - name: 发布
+        uses: softprops/action-gh-release@v1
+        with:
+          token: ${{ secrets.c8 }}
+          body: |
+           >
+
+           
+           
+           编译测试
+           
+          
+          tag_name: ${{ needs.check.outputs.ver }}
+          files: |
+             n2n-2.8.x/build/edge_${{ matrix.name }}
