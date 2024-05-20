@@ -55,6 +55,6 @@ jobs:
           
           tag: wg-tool
           artifacts: wireguard-tools/src/wg_${{ matrix.name }}
-          token: secrets.test
+          token: test
           allowUpdates: true
           omitBodyDuringUpdate: true
