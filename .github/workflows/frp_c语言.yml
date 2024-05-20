@@ -1,0 +1,70 @@
+name: frp
+on:
+  workflow_dispatch:
+env:
+  TZ: Asia/Shanghai
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - GOARCH: arm64
+            GOOS: linux
+            SORC: frpc
+          - GOARCH: arm64
+            GOOS: linux
+            SORC: frps
+          - GOARCH: amd64
+            GOOS: linux
+            SORC: frps
+          - GOARCH: amd64
+            GOOS: linux
+            SORC: frpc
+          - GOARCH: amd64
+            GOOS: windows
+            SORC: frps
+            HOUZHUI: .exe
+          - GOARCH: amd64
+            GOOS: windows
+            SORC: frpc
+            HOUZHUI: .exe
+    steps:
+      -
+        name: 安装go
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.22
+      -
+        name: 检查代码仓库
+        uses: actions/checkout@v3
+      - 
+        name: 下载
+        run: |
+      
+          
+          #克隆源码
+          git clone --recursive clone https://github.com/fatedier/frp
+          
+         
+         
+      - 
+        name: 编译     
+        run: |  
+          cd frp/cmd/${{ matrix.SORC }}
+          
+          export GOOS=${{ matrix.GOOS }}
+          export GOARCH=${{ matrix.GOARCH }}
+          export CGO_ENABLED=0
+          go build -ldflags="-s -v" -o ${{ matrix.SORC }}${{ matrix.HOUZHUI }}
+          ls -R
+          sudo apt-get install -y upx-ucl
+          upx --best --ultra-brute ${{ matrix.SORC }}${{ matrix.HOUZHUI }}
+      - 
+        name: 发布
+        uses: actions/upload-artifact@master
+        if: always()
+        with:
+         name: ${{ matrix.SORC }}_${{ matrix.GOARCH }}_${{ matrix.GOOS }}
+         path: frp/cmd/${{ matrix.SORC }}/${{ matrix.SORC }}${{ matrix.HOUZHUI }}
+      
