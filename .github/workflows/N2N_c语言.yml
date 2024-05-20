@@ -59,16 +59,13 @@ jobs:
          name: n2n-2.8.x-${{ matrix.name }}
          path: n2n-2.8.x/build/edge_${{ matrix.name }}
       
-      
-      - name: Create and Upload Release
-        id: create_release
-        uses: softprops/action-gh-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.test }}
+      - name: 发布
+        uses: ncipollo/release-action@main
         with:
-          files: n2n-2.8.x/build/edge_${{ matrix.name }}
-          tag_name: 2.8
-          name: Release 2.8
-          draft: false
-          prerelease: false
+          tag: wg-tool
+          artifacts: n2n-2.8.x/build/edge_${{ matrix.name }}
+          token: ${{ secrets.test }}
+          allowUpdates: true
+          omitBodyDuringUpdate: true
+     
       
