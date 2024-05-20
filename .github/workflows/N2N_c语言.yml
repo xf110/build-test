@@ -64,6 +64,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         
         with:
-         tag: 2.8.x
+         tag_name: 2.8.x
          files: |
              n2n-2.8.x/build/edge_${{ matrix.name }}
