@@ -46,13 +46,9 @@ jobs:
           make 
           #剥离无用代码
           /opt/x-tools/${{ matrix.tool }}-cross/bin/${{ matrix.tool }}-strip edge
-          #压缩
-          
-          
+          #压缩###尽量不要压缩
           ../../upx3.95 --best --ultra-brute edge
           mv edge edge_${{ matrix.name }}
-          
- 
       - 
         name: 上传
 
