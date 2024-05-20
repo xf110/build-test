@@ -1,0 +1,79 @@
+name: alist
+on:
+  workflow_dispatch:
+env:
+  TZ: Asia/Shanghai
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - name: arm64
+            tool: aarch64-linux-musl
+          #- name: mipsel
+            #tool: mipsel-linux-musl
+            #GOMIPS: softfloat
+          - name: amd64
+            tool: x86_64-linux-musl
+    steps:
+      -
+        name: 安装go
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.21.5
+      -
+        name: 检查代码仓库
+        uses: actions/checkout@v3
+      - 
+        name: Build ${{ matrix.name }}
+        run: |
+          ##########建立编译链目录，下载交叉编译链并解压##########
+          sudo mkdir -p /opt/x-tools
+          wget https://musl.cc/${{ matrix.tool }}-cross.tgz
+          sudo tar xf ${{ matrix.tool }}-cross.tgz -C /opt/x-tools
+          
+          ##########下载源码##########
+          #克隆源码
+          git clone --recursive clone https://github.com/alist-org/alist
+          cd alist
+          #下载前端
+          curl -L https://codeload.github.com/alist-org/web-dist/tar.gz/refs/heads/dev -o web-dist-dev.tar.gz
+          tar -zxvf web-dist-dev.tar.gz
+          rm -rf public/dist
+          mv -f web-dist-dev/dist public
+          rm -rf web-dist-dev web-dist-dev.tar.gz
+
+          curl -L https://github.com/alist-org/alist-web/releases/latest/download/dist.tar.gz -o dist.tar.gz
+          tar -zxvf dist.tar.gz
+          rm -rf public/dist
+          mv -f dist public
+          rm -rf dist.tar.gz
+      - 
+        name: 编译     
+        run: |  
+          cd alist
+          #export GOOS=windows
+          export GOOS=linux 
+          #选择架构
+          export GOARCH=${{ matrix.name }}
+          export GOMIPS=${{ matrix.GOMIPS }}
+          export CGO_ENABLED=1
+          #定义编译器位置
+          export CC=/opt/x-tools/${{ matrix.tool }}-cross/bin/${{ matrix.tool }}-gcc
+          go build -ldflags="-s -v -extldflags -static" -o alist
+          #剥离
+          
+          /opt/x-tools/${{ matrix.tool }}-cross/bin/${{ matrix.tool }}-strip alist
+          #压缩（尽量不要压缩，需要10倍时间
+          
+          upx --best --ultra-brute alist
+ 
+      - 
+        name: 发布
+
+        uses: actions/upload-artifact@master
+        if: always()
+        with:
+         name: alist-${{ matrix.name }}
+         path: alist
