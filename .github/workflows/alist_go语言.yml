@@ -70,10 +70,18 @@ jobs:
           upx --best --ultra-brute alist
  
       - 
-        name: 发布
+        name: 上传
 
         uses: actions/upload-artifact@master
         if: always()
         with:
          name: alist-${{ matrix.name }}
          path: alist
+      - name: 发布
+        uses: ncipollo/release-action@main
+        with:
+          tag: wg-tool
+          artifacts: alist/build/alist-${{ matrix.name }}
+          token: ${{ secrets.test }}
+          allowUpdates: true
+          omitBodyDuringUpdate: true
