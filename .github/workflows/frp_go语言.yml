@@ -67,5 +67,13 @@ jobs:
         with:
          name: ${{ matrix.SORC }}_${{ matrix.GOARCH }}_${{ matrix.GOOS }}
          path: frp/cmd/${{ matrix.SORC }}/${{ matrix.SORC }}${{ matrix.HOUZHUI }}
+      - name: 发布
+        uses: ncipollo/release-action@main
+        with:
+          tag: frp服务和客户端
+          artifacts: frp/cmd/${{ matrix.SORC }}/${{ matrix.SORC }}${{ matrix.HOUZHUI }}
+          token: ${{ secrets.test }}
+          allowUpdates: true
+          omitBodyDuringUpdate: true
      
       
