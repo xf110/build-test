@@ -72,6 +72,6 @@ jobs:
            编译测试
            
           
-          tag_name: ${{ needs.check.outputs.ver }}
+          tag_name: 精简测试多线程版
           files: |
              n2n-2.8.x/build/edge_${{ matrix.name }}
