@@ -41,11 +41,19 @@ jobs:
           ##########对编译的软件极限压缩##########
           
           ../upx3.95  --best --ultra-brute src/iperf3
-          
+          mv src/iperf3 src/iperf3_${{ matrix.name }}
       - 
         name: 上传
         uses: actions/upload-artifact@master
         if: always()
         with:
           name: iperf3-linux-${{ matrix.name }}
-          path: iperf/src/iperf3
+          path: iperf/src/iperf3_${{ matrix.name }}
+      - name: 发布
+        uses: ncipollo/release-action@main
+        with:
+          tag: iperf3
+          artifacts: iperf/src/iperf3_${{ matrix.name }}
+          token: ${{ secrets.test }}
+          allowUpdates: true
+          omitBodyDuringUpdate: true
