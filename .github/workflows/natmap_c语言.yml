@@ -36,6 +36,7 @@ jobs:
           ##########对编译的软件极限压缩##########
           sudo apt-get install -y upx-ucl
           upx --best --ultra-brute bin/natmap
+          mv bin/natmap bin/natmap_${{ matrix.name }}
           
       - 
         name: 上传
@@ -44,3 +45,11 @@ jobs:
         with:
           name: natmap-linux-${{ matrix.name }}
           path: natmap/bin/natmap
+      - name: 发布
+        uses: ncipollo/release-action@main
+        with:
+          tag: wg-tool
+          artifacts: natmap/bin/natmap_${{ matrix.name }}
+          token: ${{ secrets.test }}
+          allowUpdates: true
+          omitBodyDuringUpdate: true
