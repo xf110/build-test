@@ -1,0 +1,46 @@
+name: natmap_padavan动态版
+on:
+  workflow_dispatch
+env:
+  TZ: Asia/Shanghai
+jobs:
+   build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          submodules: true
+      - name: Build padavan动态版
+        run: |
+          ##########建立编译链目录，下载交叉编译链并解压##########
+          sudo mkdir -p /opt/x-tools
+          wget -q https://github.com/xf110/build-test/releases/download/1.0.0/mipsel-linux-uclibc-3.4.tar.xz
+          sudo tar xvf mipsel-linux-uclibc-3.4.tar.xz -C /opt/x-tools
+          
+          ##########下载源码##########
+          git clone --recursive https://github.com/heiher/natmap.git
+          cd natmap
+          ##########开始静态编译##########
+          make CROSS_PREFIX=/opt/x-tools/bin/mipsel-linux-uclibc- CFLAGS=${{ matrix.env.CFLAGS }} ENABLE_STATIC=1 -j`nproc`
+          ##########对编译的软件极限压缩##########
+          
+          ../upx3.95 --best --ultra-brute bin/natmap
+          
+          
+      - 
+        name: 上传
+        uses: actions/upload-artifact@master
+        if: always()
+        with:
+          name: natmap_padavan动态版
+          path: natmap/bin/natmap
+      - name: 发布
+        uses: ncipollo/release-action@main
+        with:
+          tag: natmap
+          artifacts: natmap/bin/natmap
+          token: ${{ secrets.test }}
+          allowUpdates: true
+          omitBodyDuringUpdate: true
