@@ -36,7 +36,7 @@ jobs:
           /opt/x-tools/${{ matrix.tool }}/bin/${{ matrix.tool }}-gcc --target-help
           ./bootstrap.sh
           ./configure --help
-          ./configure --enable-static-bin --host=${{ matrix.name }} --without-sctp --without-openssl
+          ./configure --enable-static-bin --host=${{ matrix.name }} --without-sctp --with-openssl=no
           make 
           ##########对编译的软件极限压缩##########
           
