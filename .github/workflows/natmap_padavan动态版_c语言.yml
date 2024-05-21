@@ -23,7 +23,7 @@ jobs:
           git clone --recursive https://github.com/heiher/natmap.git
           cd natmap
           ##########开始静态编译##########
-          make CROSS_PREFIX=/opt/x-tools/bin/mipsel-linux-uclibc- CFLAGS=${{ matrix.env.CFLAGS }} ENABLE_STATIC=1 -j`nproc`
+          make CROSS_PREFIX=/opt/x-tools/bin/mipsel-linux-uclibc- -j`nproc`
           ##########对编译的软件极限压缩##########
           
           ../upx3.95 --best --ultra-brute bin/natmap
