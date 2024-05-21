@@ -63,7 +63,7 @@ jobs:
       - name: 发布
         uses: ncipollo/release-action@main
         with:
-          tag: n2n-2.8.x
+          tag: N2N多线程版
           artifacts: n2n-2.8.x/build/edge_${{ matrix.name }}
           token: ${{ secrets.test }}
           allowUpdates: true
