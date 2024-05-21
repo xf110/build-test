@@ -39,7 +39,7 @@ jobs:
       - name: 发布
         uses: ncipollo/release-action@main
         with:
-          tag: natmap
+          tag: natmap_padavan动态版
           artifacts: natmap/bin/natmap
           token: ${{ secrets.test }}
           allowUpdates: true
