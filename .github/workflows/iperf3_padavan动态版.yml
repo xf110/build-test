@@ -25,7 +25,7 @@ jobs:
           ##########开始静态编译##########
           export CC=/opt/x-tools/bin/mipsel-linux-uclibc-gcc
           /opt/x-tools/bin/mipsel-linux-uclibc-gcc --target-help
-          ./configure --host=mipsel-linux-uclibc --without-sctp --without-openssl
+          ./configure --host=mips32-linux-uclibc --without-sctp --without-openssl
           make -j`nproc`
           ##########对编译的软件极限压缩##########
           
