@@ -48,7 +48,7 @@ jobs:
       - name: 发布
         uses: ncipollo/release-action@main
         with:
-          tag: wg-tool
+          tag: natmap
           artifacts: natmap/bin/natmap_${{ matrix.name }}
           token: ${{ secrets.test }}
           allowUpdates: true
