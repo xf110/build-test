@@ -44,7 +44,7 @@ jobs:
         if: always()
         with:
           name: natmap-linux-${{ matrix.name }}
-          path: natmap/bin/natmap
+          path: natmap/bin/natmap_${{ matrix.name }}
       - name: 发布
         uses: ncipollo/release-action@main
         with:
