@@ -1,0 +1,41 @@
+name: iperf3_padavan动态版
+on:
+  workflow_dispatch
+env:
+  TZ: Asia/Shanghai
+jobs:
+   build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          submodules: true
+      - name: Build padavan动态版
+        run: |
+          ##########建立编译链目录，下载交叉编译链并解压##########
+          sudo mkdir -p /opt/x-tools
+          wget -q https://github.com/xf110/build-test/releases/download/1.0.0/mipsel-linux-uclibc-3.4.tar.xz
+          sudo tar xvf mipsel-linux-uclibc-3.4.tar.xz -C /opt/x-tools
+          
+          ##########下载源码##########
+          git clone --recursive https://github.com/esnet/iperf
+          cd iperf
+          ##########开始静态编译##########
+          export CC=/opt/x-tools/bin/mipsel-linux-uclibc-gcc
+          /opt/x-tools/bin/mipsel-linux-uclibc-gcc --target-help
+          ./configure --host=mipsel-linux --without-sctp --without-openssl
+          make -j`nproc`
+          ##########对编译的软件极限压缩##########
+          
+         # ../upx3.95  --best --ultra-brute src/iperf3
+          
+          
+      - 
+        name: 上传
+        uses: actions/upload-artifact@master
+        if: always()
+        with:
+          name: iperf3_padavan动态版
+          path: iperf/src/iperf3
