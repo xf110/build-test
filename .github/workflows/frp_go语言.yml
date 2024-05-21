@@ -44,7 +44,7 @@ jobs:
       
           
           #克隆源码
-          git clone --recursive clone https://github.com/fatedier/frp
+          git clone --recursive https://github.com/fatedier/frp
           
          
          
