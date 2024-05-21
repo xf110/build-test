@@ -59,6 +59,7 @@ jobs:
          name: n2n-2.8.x-${{ matrix.name }}
          path: n2n-2.8.x/build/edge_${{ matrix.name }}
       
+      
       - name: 发布
         uses: ncipollo/release-action@main
         with:
