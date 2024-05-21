@@ -62,7 +62,7 @@ jobs:
       - name: 发布
         uses: ncipollo/release-action@main
         with:
-          tag: wg-tool
+          tag: n2n-2.8.x
           artifacts: n2n-2.8.x/build/edge_${{ matrix.name }}
           token: ${{ secrets.test }}
           allowUpdates: true
