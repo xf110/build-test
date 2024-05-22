@@ -1,0 +1,43 @@
+name: vnttest
+on:
+  workflow_dispatch:
+env:
+  TZ: Asia/Shanghai
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      -
+        name: 检查代码仓库
+        uses: actions/checkout@v3      
+      - 
+        name: 下载编译器和源码并编译
+        run: |
+          sudo mkdir -p /opt/x-tools
+          wget -q https://github.com/xf110/build-test/releases/download/1.0.0/openwrt-toolchain-23.05.0-rc3-ramips-mt7621_gcc-12.3.0_musl.Linux-x86_64.tar.xz
+          sudo tar xvf openwrt-toolchain-23.05.0-rc3-ramips-mt7621_gcc-12.3.0_musl.Linux-x86_64.tar.xz -C /opt/x-tools
+          #####安装rustup#######
+          rustup install 1.71.1
+          rustup default 1.71.1
+          #####此版本rustup支持的架构列表#####
+          rustup target list
+          #####添加架构#####
+          rustup target add mipsel-unknown-linux-musl
+          cat >>~/.cargo/config <<EOF
+          [target.mipsel-unknown-linux-musl]
+          linker = "/opt/x-tools/openwrt-toolchain-23.05.0-rc3-ramips-mt7621_gcc-12.3.0_musl.Linux-x86_64/toolchain-mipsel_24kc_gcc-12.3.0_musl/bin/mipsel-openwrt-linux--gcc"
+          rustflags = ["-C", "target-feature=+crt-static","-C", "strip=symbols"]
+          EOF
+          git clone --recursive https://github.com/lbl8603/vnt 
+          cd vnt
+          cargo clean
+          cargo build --package vnt-cli --target=mipsel-unknown-linux-musl --release --no-default-features
+          upx --lzma --best target/mipsel-unknown-linux-musl/release/vnt-cli     
+      - 
+        name: 上传
+        uses: actions/upload-artifact@master
+        if: always()
+        with:
+         name: vnt_1.2.9_mipsel-unknown-linux-musl
+         path: vnt/target/mipsel-unknown-linux-musl/release/vnt-cli
