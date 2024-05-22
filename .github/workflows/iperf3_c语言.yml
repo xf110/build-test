@@ -26,7 +26,7 @@ jobs:
           ##########建立编译链目录，下载交叉编译链并解压##########
           sudo mkdir -p /opt/x-tools
           wget -q https://github.com/musl-cross/musl-cross/releases/download/20240317/${{ matrix.tool }}.tgz
-          sudo tar xvf ${{ matrix.tool }}.tgz -C /opt/x-tools
+          tar -xf ${{ matrix.tool }}.tgz -C /opt/x-tools
           sudo chmod +x upx3.95
           ##########下载源码##########
           git clone --recursive https://github.com/esnet/iperf
