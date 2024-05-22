@@ -31,7 +31,7 @@ jobs:
           ##########建立编译链目录，下载交叉编译链并解压##########
           sudo mkdir -p /opt/x-tools
           wget https://musl.cc/${{ matrix.tool }}-cross.tgz
-          sudo tar xf ${{ matrix.tool }}-cross.tgz -C /opt/x-tools
+          tar xf ${{ matrix.tool }}-cross.tgz -C /opt/x-tools
           
           ##########下载源码##########
           #克隆源码
