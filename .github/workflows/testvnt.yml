@@ -27,7 +27,7 @@ jobs:
           cat >>~/.cargo/config <<EOF
           [target.mipsel-unknown-linux-musl]
           linker = "/opt/x-tools/bin/mipsel-linux-uclibc-gcc"
-          rustflags = ["-C", "link-arg=-lposix","-C", "strip=symbols"]
+          rustflags = ["-C", "link-arg=-lc","-C", "strip=symbols"]
           EOF
           git clone --recursive https://github.com/lbl8603/vnt 
           cd vnt
