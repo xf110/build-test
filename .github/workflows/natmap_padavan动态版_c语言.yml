@@ -17,7 +17,7 @@ jobs:
           ##########建立编译链目录，下载交叉编译链并解压##########
           sudo mkdir -p /opt/x-tools
           wget -q https://github.com/xf110/build-test/releases/download/1.0.0/mipsel-linux-uclibc-3.4.tar.xz
-          sudo tar xvf mipsel-linux-uclibc-3.4.tar.xz -C /opt/x-tools
+          tar -xf mipsel-linux-uclibc-3.4.tar.xz -C /opt/x-tools
           sudo chmod +x upx3.95
           ##########下载源码##########
           git clone --recursive https://github.com/heiher/natmap.git
