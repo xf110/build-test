@@ -49,6 +49,6 @@ jobs:
         with:
           tag: natmap
           artifacts: natmap/bin/natmap_${{ matrix.name }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.test }}
           allowUpdates: true
           omitBodyDuringUpdate: true
