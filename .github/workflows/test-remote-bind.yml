@@ -45,11 +45,11 @@ jobs:
           cargo clean
           cargo build --package client --target=${{ matrix.name }} --release
           ls -R ../
-          upx --lzma --best target/${{ matrix.name }}/release/client
+          upx --lzma --best ../target/${{ matrix.name }}/release/client
       - 
         name: 上传
         uses: actions/upload-artifact@master
         if: always()
         with:
-         name: vnt_1.2.9_${{ matrix.name }}
-         path: vnt/target/${{ matrix.name }}/release/remote-bind
+         name: client_${{ matrix.name }}
+         path: remote-bind/target/${{ matrix.name }}/release/client
