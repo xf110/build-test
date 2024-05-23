@@ -26,7 +26,7 @@ jobs:
           sudo mkdir -p /opt/x-tools
           wget -q https://musl.cc/${{ matrix.tool }}-cross.tgz
           tar -xf ${{ matrix.tool }}-cross.tgz -C /opt/x-tools
-          
+          sudo chmod +x upx3.95
           ##########下载源码##########
           #克隆源码
           git clone --quiet https://github.com/WireGuard/wireguard-tools
@@ -39,17 +39,18 @@ jobs:
           export CC=/opt/x-tools/${{ matrix.tool }}-cross/bin/${{ matrix.tool }}-gcc
           #定义编译器位置
           make
-          #upx --best --ultra-brute wg
+          #压缩
+          ../../upx3.95 --best --ultra-brute wg
           mv wg wg_${{ matrix.name }}
       - 
         name: 上传
-
         uses: actions/upload-artifact@master
         if: always()
         with:
          name: wg-${{ matrix.name }}
          path: wireguard-tools/src/wg_${{ matrix.name }}
-      - name: 发布
+      - 
+        name: 发布
         uses: ncipollo/release-action@main
         with:
           tag: wg-tool
