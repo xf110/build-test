@@ -33,7 +33,6 @@ jobs:
         run: |
           #克隆源码
           git clone --recursive https://git.zx2c4.com/wireguard-go
-
       - 
         name: 编译     
         run: |  
@@ -43,7 +42,7 @@ jobs:
           export CGO_ENABLED=0
           export GOMIPS=${{ matrix.GOMIPS }}
           go build -ldflags="-s -v" -o wireguard-go-${{ matrix.GOARCH }}${{ matrix.HOUZHUI }}
-          
+          #压缩
           upx --best --ultra-brute wireguard-go-${{ matrix.GOARCH }}${{ matrix.HOUZHUI }}
       - 
         name: 发布
