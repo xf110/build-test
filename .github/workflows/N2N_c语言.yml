@@ -58,9 +58,8 @@ jobs:
         with:
          name: n2n-2.8.x-${{ matrix.name }}
          path: n2n-2.8.x/build/edge_${{ matrix.name }}
-      
-      
-      - name: 发布
+      - 
+        name: 发布
         uses: ncipollo/release-action@main
         with:
           tag: N2N多线程版
@@ -68,5 +67,3 @@ jobs:
           token: ${{ secrets.test }}
           allowUpdates: true
           omitBodyDuringUpdate: true
-     
-      
