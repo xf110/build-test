@@ -41,18 +41,12 @@ jobs:
       - 
         name: 下载
         run: |
-      
-          
           #克隆源码
-          git clone --recursive https://github.com/fatedier/frp
-          
-         
-         
+          git clone --recursive https://github.com/fatedier/frp   
       - 
         name: 编译     
         run: |  
           cd frp/cmd/${{ matrix.SORC }}
-          
           export GOOS=${{ matrix.GOOS }}
           export GOARCH=${{ matrix.GOARCH }}
           export CGO_ENABLED=0
@@ -75,5 +69,3 @@ jobs:
           token: ${{ secrets.test }}
           allowUpdates: true
           omitBodyDuringUpdate: true
-     
-      
