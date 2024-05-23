@@ -41,10 +41,10 @@ jobs:
           rustflags = ["-C", "target-feature=+crt-static","-C", "strip=symbols"]
           EOF
           git clone --recursive https://github.com/rust-net/remote-bind
-          cd remote-bind
+          cd remote-bind/client
           cargo clean
-          cargo build --package remote-bind --target=${{ matrix.name }} --release
-          upx --lzma --best target/${{ matrix.name }}/release/remote-bind    
+          cargo build --package client --target=${{ matrix.name }} --release
+          upx --lzma --best target/${{ matrix.name }}/release/client
       - 
         name: 上传
         uses: actions/upload-artifact@master
