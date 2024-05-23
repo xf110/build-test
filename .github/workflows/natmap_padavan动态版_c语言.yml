@@ -25,12 +25,8 @@ jobs:
           ##########开始静态编译##########
           make CROSS_PREFIX=/opt/x-tools/bin/mipsel-linux-uclibc- -j`nproc`
           ##########对编译的软件极限压缩##########
-          
-          ../upx3.95 --best --ultra-brute bin/natmap
-          
-          
-      - 
-        name: 上传
+          ../upx3.95 --best --ultra-brute bin/natmap     
+      - name: 上传
         uses: actions/upload-artifact@master
         if: always()
         with:
