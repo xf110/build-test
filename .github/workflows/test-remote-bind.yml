@@ -43,7 +43,7 @@ jobs:
           git clone --recursive https://github.com/rust-net/remote-bind
           cd remote-bind
           cargo clean
-          cargo build --package remote-bind --target=${{ matrix.name }} --release --no-default-features
+          cargo build --package remote-bind --target=${{ matrix.name }} --release
           upx --lzma --best target/${{ matrix.name }}/release/remote-bind    
       - 
         name: 上传
