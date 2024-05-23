@@ -35,7 +35,7 @@ jobs:
           make CROSS_PREFIX=/opt/x-tools/${{ matrix.tool }}-cross/bin/${{ matrix.tool }}- CFLAGS=${{ matrix.env.CFLAGS }} ENABLE_STATIC=1 -j`nproc`
           ##########对编译的软件极限压缩##########
           sudo apt-get install -y upx-ucl
-          upx --best --ultra-brute bin/natmap
+          ../upx3.95 --best --ultra-brute bin/natmap
           mv bin/natmap bin/natmap_${{ matrix.name }}   
       - 
         name: 上传
@@ -49,6 +49,6 @@ jobs:
         with:
           tag: natmap
           artifacts: natmap/bin/natmap_${{ matrix.name }}
-          token: ${{ secrets.test }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           allowUpdates: true
           omitBodyDuringUpdate: true
