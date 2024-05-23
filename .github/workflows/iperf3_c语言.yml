@@ -39,11 +39,9 @@ jobs:
           ./configure --enable-static-bin --host=${{ matrix.name }} --without-sctp --with-openssl=no
           make 
           ##########对编译的软件极限压缩##########
-          
           ../upx3.95  --best --ultra-brute src/iperf3
           mv src/iperf3 src/iperf3_${{ matrix.name }}
-      - 
-        name: 上传
+      - name: 上传
         uses: actions/upload-artifact@master
         if: always()
         with:
