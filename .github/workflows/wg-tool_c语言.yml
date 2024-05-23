@@ -39,7 +39,7 @@ jobs:
           export CC=/opt/x-tools/${{ matrix.tool }}-cross/bin/${{ matrix.tool }}-gcc
           #定义编译器位置
           make
-          #压缩
+          #压缩，如果无法运行就不要压缩
           ../../upx3.95 --best --ultra-brute wg
           mv wg wg_${{ matrix.name }}
       - 
