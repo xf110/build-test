@@ -45,7 +45,8 @@ jobs:
           cargo clean
           cargo build --package client --target=${{ matrix.name }} --release
           ls -R ../
-          upx --lzma --best ../target/${{ matrix.name }}/release/client
+          sudo chmod +x ../../upx3.95
+          ../../upx3.95 --lzma --best ../target/${{ matrix.name }}/release/client
       - 
         name: 上传
         uses: actions/upload-artifact@master
