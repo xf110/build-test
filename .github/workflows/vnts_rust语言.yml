@@ -44,7 +44,7 @@ jobs:
           cd vnts
           cargo clean
           cargo build --package vnts --target=${{ matrix.name }} --release
-          
+          #压缩
           upx --lzma --best target/${{ matrix.name }}/release/vnts     
       - 
         name: 上传
