@@ -1,0 +1,36 @@
+name: vnts-freebsd
+
+on:
+  workflow_dispatch:
+  
+env:
+  CARGO_TERM_COLOR: always
+  TZ: Asia/Shanghai
+jobs:
+ build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          repository: lbl8603/vnts
+          ref: master #默认使用master分支
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qemu qemu-user-static binfmt-support build-essential
+          rustup target add x86_64-unknown-freebsd
+      - name: Install cross
+        run: cargo install cross --git https://github.com/cross-rs/cross
+
+      - name: Build with cross for FreeBSD with static linking
+        env:
+          RUSTFLAGS: "-C strip=symbols"
+        run: |
+          cross build --target x86_64-unknown-freebsd --release --features ring-cipher,web
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: vnts
+          path: target/x86_64-unknown-freebsd/release/vnts
