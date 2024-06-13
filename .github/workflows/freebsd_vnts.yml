@@ -27,7 +27,7 @@ jobs:
         env:
           RUSTFLAGS: "-C strip=symbols"
         run: |
-          cross build --target x86_64-unknown-freebsd --release --features ring-cipher,web
+          cross build --target x86_64-unknown-freebsd --release --no-default-features
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
