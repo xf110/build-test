@@ -44,7 +44,7 @@ jobs:
           cd vnt
           cargo clean
           cargo build --package vnt-cli --target=${{ matrix.name }} --release --no-default-features
-          upx --lzma --best target/${{ matrix.name }}/release/vnt-cli     
+          #upx --lzma --best target/${{ matrix.name }}/release/vnt-cli     
       - 
         name: 上传
         uses: actions/upload-artifact@master
