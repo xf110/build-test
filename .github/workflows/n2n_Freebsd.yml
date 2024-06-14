@@ -1,0 +1,191 @@
+name: N2N_freebsd
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+env:
+  TZ: Asia/Shanghai
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: 检查代码仓库
+        uses: actions/checkout@main
+      - 
+        name: 下载源码并编译${{ matrix.name }}
+        run: |
+          ##########建立编译链目录，下载交叉编译链并解压##########
+          sudo mkdir -p /opt/x-tools
+          wget -q https://musl.cc/${{ matrix.tool }}-cross.tgz
+          tar -xf ${{ matrix.tool }}-cross.tgz -C /opt/x-tools
+          #给upx3.95赋予执行权限
+          sudo chmod +x upx3.95
+          GPT-4o
+
+
+
+
+写一个利用github云编译脚本交叉编译freebsd平台amd64架构的脚本范例
+profile
+GPT-4o 
+当涉及利用GitHub Actions 进行交叉编译时，你需要一个脚本来配置和执行这些任务。以下是一个示例脚本，假设你的项目已经包含了用于交叉编译的Makefile 或者其他构建系统。
+
+
+GitHub Actions Workflow 示例
+
+创建一个名为 .github/workflows/cross_compile.yml 的文件，并添加以下内容：
+
+
+yaml
+Copy Code
+name: Cross Compile FreeBSD amd64
+on:
+  push:
+    branches:
+      - main  # 可以根据需要更改触发条件
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v2
+
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v1
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
+
+    - name: Build and Push Docker Image
+      id: build
+      env:
+        DOCKER_BUILDKIT: 1
+      run: |
+        docker buildx create --use --name=mybuilder
+        docker buildx inspect mybuilder --bootstrap
+        docker buildx build --platform linux/amd64,freebsd/amd64 .
+
+    # 可以根据需要添加更多步骤，比如测试、部署等
+脚本说明和要点：
+
+
+Workflow 触发条件：
+
+在 on 部分可以设置触发该工作流的条件，例如 push 到 main 分支。
+
+
+
+jobs:
+
+build: 定义了一个作业，名为 build，在 ubuntu-latest 上运行。
+
+
+
+步骤说明：
+
+Checkout Repository: 检出 GitHub 仓库内容。
+
+Set up QEMU 和 Set up Docker Buildx: 准备环境，这些步骤使得在 GitHub Actions 中可以使用 QEMU 和 Docker Buildx 进行交叉编译。
+
+Build and Push Docker Image: 构建并推送 Docker 镜像。这里的示例中使用了 Docker Buildx 来构建适用于 linux/amd64 和 freebsd/amd64 平台的镜像。你需要根据具体情况修改 docker buildx build 命令以适应你的项目构建需求。
+
+
+
+环境变量：
+
+DOCKER_BUILDKIT: 1： 启用 Docker BuildKit，这是推荐的做法，可以提高构建效率和控制。
+
+
+
+定制化：
+
+根据你的具体需求和项目结构，可能需要修改和添加其他步骤，比如运行测试、部署等。
+
+
+
+
+这个示例假设你的项目可以通过 Docker 来进行构建，并且已经适应了跨平台的需求。根据实际情况，你可能需要调整 Dockerfile 或者构建脚本来确保项目在目标平台（例如 FreeBSD amd64）上能够正常运行和部署。
+
+
+使用交叉编译链
+profile
+GPT-4o 
+如果你希望直接使用交叉编译链而不是 Docker 来进行交叉编译，那么可以根据 FreeBSD 的交叉编译工具链进行配置。以下是一个示例 GitHub Actions 的工作流程，假设你已经安装了 FreeBSD 的交叉编译工具链，并且你的项目可以通过 Makefile 或其他构建系统进行交叉编译。
+
+
+GitHub Actions Workflow 示例
+
+创建一个名为 .github/workflows/cross_compile.yml 的文件，并添加以下内容：
+
+
+yaml
+Copy Code
+name: Cross Compile FreeBSD amd64
+on:
+  push:
+    branches:
+      - main  # 可以根据需要更改触发条件
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        os: [freebsd]
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v2
+
+    - name: Install Cross Compiler
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y freebsd-toolchain
+
+    - name: Set up Environment
+      run: |
+        export CC=x86_64-unknown-freebsd13-clang
+        export CXX=x86_64-unknown-freebsd13-clang++
+        export AR=x86_64-unknown-freebsd13-ar
+        export AS=x86_64-unknown-freebsd13-as
+        export LD=x86_64-unknown-freebsd13-ld
+        export OBJCOPY=x86_64-unknown-freebsd13-objcopy
+        export OBJDUMP=x86_64-unknown-freebsd13-objdump
+        export RANLIB=x86_64-unknown-freebsd13-ranlib
+        export READELF=x86_64-unknown-freebsd13-readelf
+        export STRIP=x86_64-unknown-freebsd13-strip
+
+          ##########下载源码##########
+          #克隆源码
+          git clone --recursive https://github.com/xf110/n2n-2.8.x 
+          #进入编译目录
+          cd n2n-2.8.x
+          #--------自定义编译选项，要阅读CMakeLists.txt调整参数---------------------------
+          #关闭加密
+          sed -i 's/USE AES" ON/USE AES" OFF/g' ./CMakeLists.txt
+          #----------------------------------------------------------------------------
+          #定义编译器位置
+          #export CC=/opt/x-tools/${{ matrix.tool }}-cross/bin/${{ matrix.tool }}-gcc
+          #二进制文件存放目录
+          mkdir build && cd build
+          #静态编译配置
+          cmake -DCMAKE_EXE_LINKER_FLAGS=-static ..  #静态编译 去掉-DCMAKE_EXE_LINKER_FLAGS=-static为动态编译
+          #开始编译
+          make 
+          #剥离无用代码
+          #/opt/x-tools/${{ matrix.tool }}-cross/bin/${{ matrix.tool }}-strip edge
+          #压缩###尽量不要压缩
+          #../../upx3.95 --best --ultra-brute edge
+          #改名
+          #mv edge edge_${{ matrix.name }}
+      - 
+        name: 上传
+        uses: actions/upload-artifact@master
+        if: always()
+        with:
+         name: n2n-2.8.x-freebsd
+         path: n2n-2.8.x/build/edge
