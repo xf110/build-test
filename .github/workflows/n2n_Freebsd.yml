@@ -17,9 +17,8 @@ jobs:
         with:
          usesh: true
          release: 13.2
-      - 
-        name: 下载源码并编译${{ matrix.name }}
-        run: |
+    
+         run: |
           ##########建立编译链目录，下载交叉编译链并解压##########
           #sudo mkdir -p /opt/x-tools
           #wget -q https://musl.cc/${{ matrix.tool }}-cross.tgz
@@ -37,20 +36,8 @@ jobs:
 
     
 
-      
-      - name: Set up Environment
-        run: |
-         export CC=x86_64-unknown-freebsd13-clang
-         export CXX=x86_64-unknown-freebsd13-clang++
-         export AR=x86_64-unknown-freebsd13-ar
-         export AS=x86_64-unknown-freebsd13-as
-         export LD=x86_64-unknown-freebsd13-ld
-         export OBJCOPY=x86_64-unknown-freebsd13-objcopy
-         export OBJDUMP=x86_64-unknown-freebsd13-objdump
-         export RANLIB=x86_64-unknown-freebsd13-ranlib
-         export READELF=x86_64-unknown-freebsd13-readelf
-         export STRIP=x86_64-unknown-freebsd13-strip
-
+    
+         
           ##########下载源码##########
           #克隆源码
           git clone --recursive https://github.com/xf110/n2n-2.8.x 
