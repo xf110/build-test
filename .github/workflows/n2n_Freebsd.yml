@@ -12,6 +12,11 @@ jobs:
       -
         name: 检查代码仓库
         uses: actions/checkout@main
+      - name: Build 
+        uses: vmactions/freebsd-vm@v1
+        with:
+         usesh: true
+         release: 13.2
       - 
         name: 下载源码并编译${{ matrix.name }}
         run: |
@@ -32,11 +37,7 @@ jobs:
 
     
 
-      - name: Install Cross Compiler
-        run: |
-         sudo apt-get update
-         sudo apt-get install -y freebsd-toolchain
-
+      
       - name: Set up Environment
         run: |
          export CC=x86_64-unknown-freebsd13-clang
