@@ -1,44 +1,45 @@
-name: N2N_freebsd
+name: Build and Test n2n on FreeBSD amd64
 
 on:
   push:
-    branches: ["main"]
-  workflow_dispatch:
+    branches:
+      - main  # 当 main 分支有推送时触发
+  workflow_dispatch:  # 允许手动触发工作流程
 
 env:
-  TZ: Asia/Shanghai
+  TZ: Asia/Shanghai  # 设置时区
 
 jobs:
   build:
-    runs-on: freebsd-latest
+    runs-on: freebsd-latest  # 在最新的 FreeBSD runner 上运行作业
 
     steps:
-      - name: Check out repository
+      - name: Check out repository  # 检出代码库
         uses: actions/checkout@v2
 
-      - name: Install build dependencies
+      - name: Install build dependencies  # 安装编译依赖
         run: |
           sudo pkg install -y gcc     # 安装编译工具链
           sudo pkg install -y make    # 安装make工具
           sudo pkg install -y cmake   # 安装cmake（如果需要）
 
-      - name: Download source code
+      - name: Download n2n source code  # 下载 n2n 源码
         run: |
-          git clone --recursive https://github.com/xf110/n2n-2.8.x 
-          cd n2n-2.8.x
-          # 自定义编译选项，根据需要调整
-          sed -i 's/USE AES" ON/USE AES" OFF/g' ./CMakeLists.txt
+          git clone --recursive https://github.com/ntop/n2n.git
+          cd n2n
 
-      - name: Build n2n
+      - name: Configure and Build n2n  # 配置并构建 n2n
         run: |
-          cd n2n-2.8.x
           mkdir build && cd build
-          cmake -DCMAKE_EXE_LINKER_FLAGS=-static ..  # 静态编译，根据需要调整
+          cmake ..
           make
 
-      - name: Upload artifact
+      - name: Run Tests  # 运行测试（如果有的话）
+        run: |
+          ctest  # 使用 ctest 命令运行测试
+
+      - name: Package and Upload Artifact  # 打包并上传构建产物
         uses: actions/upload-artifact@v2
-        if: always()  # 无论之前步骤是否失败都上传artifact
         with:
-          name: n2n-2.8.x-freebsd
-          path: n2n-2.8.x/build/edge  # 这里需要根据实际情况调整路径
+          name: n2n-binary-freebsd-amd64  # 指定 artifact 的名称
+          path: path/to/your/n2n/executable  # 替换为实际的二进制文件路径
