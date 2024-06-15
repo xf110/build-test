@@ -1,70 +1,44 @@
 name: N2N_freebsd
+
 on:
   push:
     branches: ["main"]
   workflow_dispatch:
+
 env:
   TZ: Asia/Shanghai
+
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: freebsd-latest
+
     steps:
-      -
-        name: 检查代码仓库
-        uses: actions/checkout@main
-      - name: Build 
-        uses: vmactions/freebsd-vm@v1
-        with:
-         usesh: true
-         release: 13.2
-    
-         run: |
-          ##########建立编译链目录，下载交叉编译链并解压##########
-          #sudo mkdir -p /opt/x-tools
-          #wget -q https://musl.cc/${{ matrix.tool }}-cross.tgz
-          #tar -xf ${{ matrix.tool }}-cross.tgz -C /opt/x-tools
-          #给upx3.95赋予执行权限
-          sudo chmod +x upx3.95
-        
+      - name: Check out repository
+        uses: actions/checkout@v2
 
+      - name: Install build dependencies
+        run: |
+          sudo pkg install -y gcc     # 安装编译工具链
+          sudo pkg install -y make    # 安装make工具
+          sudo pkg install -y cmake   # 安装cmake（如果需要）
 
-
-
-
-
-
-
-    
-
-    
-         
-          ##########下载源码##########
-          #克隆源码
+      - name: Download source code
+        run: |
           git clone --recursive https://github.com/xf110/n2n-2.8.x 
-          #进入编译目录
           cd n2n-2.8.x
-          #--------自定义编译选项，要阅读CMakeLists.txt调整参数---------------------------
-          #关闭加密
+          # 自定义编译选项，根据需要调整
           sed -i 's/USE AES" ON/USE AES" OFF/g' ./CMakeLists.txt
-          #----------------------------------------------------------------------------
-          #定义编译器位置
-          #export CC=/opt/x-tools/${{ matrix.tool }}-cross/bin/${{ matrix.tool }}-gcc
-          #二进制文件存放目录
+
+      - name: Build n2n
+        run: |
+          cd n2n-2.8.x
           mkdir build && cd build
-          #静态编译配置
-          cmake -DCMAKE_EXE_LINKER_FLAGS=-static ..  #静态编译 去掉-DCMAKE_EXE_LINKER_FLAGS=-static为动态编译
-          #开始编译
-          make 
-          #剥离无用代码
-          #/opt/x-tools/${{ matrix.tool }}-cross/bin/${{ matrix.tool }}-strip edge
-          #压缩###尽量不要压缩
-          #../../upx3.95 --best --ultra-brute edge
-          #改名
-          #mv edge edge_${{ matrix.name }}
-      - 
-        name: 上传
-        uses: actions/upload-artifact@master
-        if: always()
+          cmake -DCMAKE_EXE_LINKER_FLAGS=-static ..  # 静态编译，根据需要调整
+          make
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        if: always()  # 无论之前步骤是否失败都上传artifact
         with:
-         name: n2n-2.8.x-freebsd
-         path: n2n-2.8.x/build/edge
+          name: n2n-2.8.x-freebsd
+          path: n2n-2.8.x/build/edge  # 这里需要根据实际情况调整路径
