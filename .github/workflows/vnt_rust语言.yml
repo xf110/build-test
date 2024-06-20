@@ -41,7 +41,7 @@ jobs:
           linker = "/opt/x-tools/${{ matrix.tool }}-cross/bin/${{ matrix.tool }}-gcc"
           rustflags = ["-C", "target-feature=+crt-static","-C", "strip=symbols"]
           EOF
-          git clone --recursive -b 1.2.9.8 https://github.com/lbl8603/vnt 
+          git clone --recursive -b 1.2.9.6 https://github.com/lbl8603/vnt 
           cd vnt
           cargo clean
           cargo build --package vnt-cli --target=${{ matrix.name }} --release --no-default-features
