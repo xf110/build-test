@@ -53,6 +53,7 @@ jobs:
           ../../upx3.95 --best --ultra-brute edge
           #改名
           mv edge edge_${{ matrix.name }}
+          mv supernode supernode_${{ matrix.name }}
       - 
         name: 上传
         uses: actions/upload-artifact@master
@@ -60,6 +61,13 @@ jobs:
         with:
          name: n2n-2.8.x-${{ matrix.name }}
          path: n2n-2.8.x/build/edge_${{ matrix.name }}
+      - 
+        name: 上传
+        uses: actions/upload-artifact@master
+        if: always()
+        with:
+         name: n2n-2.8.x-supernode-${{ matrix.name }}
+         path: n2n-2.8.x/build/supernode_${{ matrix.name }}
       - 
         name: 发布
         uses: ncipollo/release-action@main
