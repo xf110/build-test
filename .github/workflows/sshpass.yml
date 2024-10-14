@@ -1,0 +1,41 @@
+name: 编译sshpass
+on:
+  workflow_dispatch:
+  
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        repository: kevinburke/sshpass
+        ref: master #默认使用master分支
+    - name: 下载gcc
+      uses: lmq8267/dl-musl@main
+      with:
+      #设置交叉编译目标平台
+        target: mipsel-linux-muslsf
+      #使用静态编译
+        static: true
+        gccpath: /tmp
+    - name: 安装 UPX
+      uses: crazy-max/ghaction-upx@v3
+      with:
+          version: latest
+          install-only: true
+    - name: 编译
+      run: |
+         #指定host 交叉编译平台
+         ./configure --host=mipsel-linux-muslsf 
+         sed -i '/^#define malloc rpl_malloc/d' config.h
+         make
+         ls
+         file sshpass
+         $STRIP sshpass
+         upx --lzma --best sshpass
+         
+    - uses: actions/upload-artifact@v4
+      with:
+        name: sshpass-linux
+        path: ./sshpass
