@@ -15,7 +15,7 @@ jobs:
       uses: lmq8267/dl-musl@main
       with:
       #设置交叉编译目标平台
-        target: mipsel-linux-muslsf
+        target: aarch64-linux-musl
       #使用静态编译
         static: true
         gccpath: /tmp
@@ -27,7 +27,7 @@ jobs:
     - name: 编译
       run: |
          #指定host 交叉编译平台
-         ./configure --host=mipsel-linux-muslsf 
+         ./configure --host=aarch64-linux-musl 
          sed -i '/^#define malloc rpl_malloc/d' config.h
          make
          ls
