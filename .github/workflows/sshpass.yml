@@ -1,41 +1,130 @@
-name: 编译sshpass
+name: 编译新sshpass
 on:
   workflow_dispatch:
   
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  build: 
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - TARGET: amd64
+            OS: ubuntu-latest
+            MUSL: x86_64-linux-musl
+            
+          - TARGET: arm64
+            OS: ubuntu-latest
+            MUSL: aarch64-linux-musl
+            
+          - TARGET: mips
+            OS: ubuntu-latest
+            MUSL: mips-linux-muslsf
+            
+          - TARGET: mips64
+            OS: ubuntu-latest
+            MUSL: mips64-linux-musl
+            
+          - TARGET: mips64el
+            OS: ubuntu-latest
+            MUSL: mips64el-linux-musl
+            
+          - TARGET: mipsel
+            OS: ubuntu-latest
+            MUSL: mipsel-linux-muslsf
+            
+          - TARGET: arm
+            OS: ubuntu-latest
+            MUSL: arm-linux-musleabi
+
+          - TARGET: arm_hf
+            OS: ubuntu-latest
+            MUSL: arm-linux-musleabihf
+            
+          - TARGET: armv5l
+            OS: ubuntu-latest
+            MUSL: armv5l-linux-musleabi
+
+          - TARGET: armv5l_hf
+            OS: ubuntu-latest
+            MUSL: armv5l-linux-musleabihf
+            
+          - TARGET: armv6
+            OS: ubuntu-latest
+            MUSL: armv6-linux-musleabi
+            
+          - TARGET: armv6_hf
+            OS: ubuntu-latest
+            MUSL: armv6-linux-musleabihf
+
+          - TARGET: armv7l
+            OS: ubuntu-latest
+            MUSL: armv7m-linux-musleabi
+
+          - TARGET: armv7l_hf
+            OS: ubuntu-latest
+            MUSL: armv7l-linux-musleabihf
+
+          - TARGET: Freebsd-x86-64
+            OS: ubuntu-latest
+            
+    runs-on: ${{ matrix.OS }}
     steps:
-    - name: Checkout code
+    - name: 准备代码
       uses: actions/checkout@v4
-      with:
-        repository: kevinburke/sshpass
-        ref: master #默认使用master分支
+    - name: 拉取代码
+      run: git clone https://git.code.sf.net/p/sshpass/code-git sshpass-code-git
     - name: 下载gcc
+      if: ${{ matrix.TARGET != 'Freebsd-x86-64' }}
       uses: lmq8267/dl-musl@main
       with:
-      #设置交叉编译目标平台
-        target: aarch64-linux-musl
-      #使用静态编译
+        target: ${{ matrix.MUSL }}
         static: true
         gccpath: /tmp
     - name: 安装 UPX
+      if: ${{ matrix.TARGET != 'Freebsd-x86-64' }}
       uses: crazy-max/ghaction-upx@v3
       with:
           version: latest
           install-only: true
-    - name: 编译
+    - name: 编译Linux
+      if: ${{ matrix.TARGET != 'Freebsd-x86-64' }}
+      working-directory: sshpass-code-git
       run: |
-         #指定host 交叉编译平台
-         ./configure --host=aarch64-linux-musl 
+         sudo apt-get install autoconf automake
+         sudo ln -s /usr/bin/aclocal /usr/bin/aclocal-1.15
+         autoreconf -i
+         ./configure --host=${{ matrix.MUSL }}
          sed -i '/^#define malloc rpl_malloc/d' config.h
          make
          ls
          file sshpass
          $STRIP sshpass
-         upx --lzma --best sshpass
-         
-    - uses: actions/upload-artifact@v4
+         if [[ ! ${{ matrix.TARGET }} =~ ^mips64 ]]; then
+          upx --lzma --best sshpass
+         fi
+    - name: 编译FreeBSD
+      if: ${{ matrix.TARGET == 'Freebsd-x86-64' }}
+      uses: cross-platform-actions/action@v0.23.0
       with:
-        name: sshpass-linux
-        path: ./sshpass
+        operating_system: freebsd
+        architecture: x86-64
+        version: '13.2'
+        shell: bash
+        memory: 5G
+        cpu_count: 4
+        run: |
+          sudo pkg install -y autoconf automake libtool
+          cd ./sshpass-code-git
+          export CXXFLAGS="-static"
+          export LDFLAGS="-static"
+          autoreconf -i
+          ./configure 
+          make
+          ls
+          strip sshpass
+          file sshpass
+    - name: 上传文件
+      uses: actions/upload-artifact@v4
+      with:
+        name: sshpass-${{ matrix.TARGET }}
+        path: sshpass-code-git/sshpass
