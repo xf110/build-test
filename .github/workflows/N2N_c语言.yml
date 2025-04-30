@@ -32,8 +32,8 @@ jobs:
           sudo chmod +x upx3.95
           ##########下载源码##########
           #克隆源码
-          git clone --recursive https://github.com/lmq8267/n2n-2.8.x
-          #git clone --recursive https://github.com/xf110/n2n-2.8.x 
+          #git clone --recursive https://github.com/lmq8267/n2n-2.8.x
+          git clone --recursive https://github.com/xf110/n2n-2.8.x 
           #进入编译目录
           cd n2n-2.8.x
           #--------自定义编译选项，要阅读CMakeLists.txt调整参数---------------------------
