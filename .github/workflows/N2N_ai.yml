@@ -31,7 +31,7 @@ jobs:
         run: |
           sudo mkdir -p /opt/x-tools
           # 增加重试机制，提高下载稳定性
-          wget -c --tries=3 https://tvflile.xf110.nyc.mn/${{ matrix.tool }}-cross.tgz || { echo "下载编译链失败"; exit 1; }
+          wget -c --tries=3 https://github.com/xf110/build-test/releases/download/n2n2/${{ matrix.tool }}-cross.tgz || { echo "下载编译链失败"; exit 1; }
           tar -xf ${{ matrix.tool }}-cross.tgz -C /opt/x-tools || { echo "解压编译链失败"; exit 1; }
           # 验证编译链是否存在
           if [ ! -f "/opt/x-tools/${{ matrix.tool }}-cross/bin/${{ matrix.tool }}-gcc" ]; then
@@ -76,21 +76,3 @@ jobs:
           path: |
             n2n-2.8.x/build/edge_${{ matrix.name }}
             n2n-2.8.x/build/supernode_${{ matrix.name }}
-  release:
-    needs: build  # 依赖build job完成后再发布
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
-    steps:
-      - name: 下载所有artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: artifacts
-
-      - name: 发布
-        uses: ncipollo/release-action@v1
-        with:
-          tag: N2N多线程版
-          artifacts: "artifacts/**/*"  # 上传所有架构的产物
-          token: ${{ secrets.test }}
-          allowUpdates: true
-          omitBodyDuringUpdate: true
