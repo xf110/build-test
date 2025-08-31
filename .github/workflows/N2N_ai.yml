@@ -22,26 +22,55 @@ jobs:
             processor: x86_64
     steps:
       - name: 检查代码仓库
-        uses: actions/checkout@v4  # 使用最新版actions/checkout
+        uses: actions/checkout@v4
 
-      - name: 安装基础依赖
+      - name: 安装基础依赖和网络工具
         run: |
-          sudo apt-get update && sudo apt-get install -y cmake make  # 确保编译工具存在
+          sudo apt-get update && sudo apt-get install -y \
+            cmake make wget curl dnsutils \
+            --no-install-recommends
 
-      - name: 下载交叉编译链并解压
+      - name: 下载交叉编译链（带备用源和多次重试）
         run: |
           sudo mkdir -p /opt/x-tools
-          # 增加重试机制，提高下载稳定性
-          wget -c --tries=3 https://musl.cc/${{ matrix.tool }}-cross.tgz || { echo "下载编译链失败"; exit 1; }
-          tar -xf ${{ matrix.tool }}-cross.tgz -C /opt/x-tools || { echo "解压编译链失败"; exit 1; }
+          
+          # 主源和备用源列表
+          PRIMARY_urls=(
+            "https://musl.cc/${{ matrix.tool }}-cross.tgz"
+            "https://mirror.ghproxy.com/https://github.com/richfelker/musl-cross-make/releases/download/latest/${{ matrix.tool }}-cross.tgz"
+            "https://cdn.jsdelivr.net/gh/richfelker/musl-cross-make@latest/${{ matrix.tool }}-cross.tgz"
+          )
+          
+          # 多次尝试下载，使用不同源
+          for url in "${urls[@]}"; do
+            echo "尝试从 $url 下载..."
+            if wget -c --tries=5 --timeout=30 "$url" -O "${{ matrix.tool }}-cross.tgz"; then
+              echo "下载成功"
+              break
+            fi
+            echo "从 $url 下载失败，尝试下一个源..."
+          done
+          
+          # 检查是否下载成功
+          if [ ! -f "${{ matrix.tool }}-cross.tgz" ]; then
+            echo "所有源均下载失败"
+            exit 1
+          fi
+          
+          # 解压编译链
+          tar -xf ${{ matrix.tool }}-cross.tgz -C /opt/x-tools || { 
+            echo "解压编译链失败"; 
+            exit 1; 
+          }
+          
           # 验证编译链是否存在
           if [ ! -f "/opt/x-tools/${{ matrix.tool }}-cross/bin/${{ matrix.tool }}-gcc" ]; then
-            echo "编译链不存在"; exit 1;
-          fi
+            echo "编译链不存在"; 
+            exit 1; 
+          }
 
       - name: 验证UPX工具
         run: |
-          # 检查UPX是否存在并赋予权限
           if [ ! -f "upx3.95" ]; then
             echo "upx3.95文件缺失"; exit 1;
           fi
@@ -49,34 +78,19 @@ jobs:
 
       - name: 克隆源码并编译
         run: |
-          # 克隆源码（确保递归克隆子模块）
           git clone --recursive https://github.com/xf110/n2n-2.8.x || { echo "克隆源码失败"; exit 1; }
           cd n2n-2.8.x || { echo "进入源码目录失败"; exit 1; }
-
-          # 精确关闭AES加密（匹配完整行，避免误改）
           sed -i 's/OPTION(N2N_OPTION_AES "USE AES" ON)/OPTION(N2N_OPTION_AES "USE AES" OFF)/g' ./CMakeLists.txt
-
-          # 创建编译目录
           mkdir -p build && cd build || { echo "创建编译目录失败"; exit 1; }
-
-          # CMake交叉编译配置（明确指定目标系统、处理器和编译器）
           cmake .. \
             -DCMAKE_SYSTEM_NAME=Linux \
             -DCMAKE_SYSTEM_PROCESSOR=${{ matrix.processor }} \
             -DCMAKE_C_COMPILER=/opt/x-tools/${{ matrix.tool }}-cross/bin/${{ matrix.tool }}-gcc \
             -DCMAKE_EXE_LINKER_FLAGS=-static || { echo "CMake配置失败"; exit 1; }
-
-          # 编译（使用-j加速，失败时输出详细日志）
           make -j$(nproc) || { echo "编译失败"; exit 1; }
-
-          # 剥离二进制文件
           /opt/x-tools/${{ matrix.tool }}-cross/bin/${{ matrix.tool }}-strip edge supernode || { echo "剥离失败"; exit 1; }
-
-          # 压缩（失败不终止，仅警告）
           ../../upx3.95 --best --ultra-brute edge || echo "UPX压缩edge失败，跳过"
           ../../upx3.95 --best --ultra-brute supernode || echo "UPX压缩supernode失败，跳过"
-
-          # 重命名二进制文件
           mv edge edge_${{ matrix.name }}
           mv supernode supernode_${{ matrix.name }}
 
@@ -89,7 +103,7 @@ jobs:
             n2n-2.8.x/build/supernode_${{ matrix.name }}
 
   release:
-    needs: build  # 依赖build job完成后再发布
+    needs: build
     runs-on: ubuntu-latest
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     steps:
@@ -102,7 +116,7 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           tag: N2N多线程版
-          artifacts: "artifacts/**/*"  # 上传所有架构的产物
+          artifacts: "artifacts/**/*"
           token: ${{ secrets.test }}
           allowUpdates: true
           omitBodyDuringUpdate: true
