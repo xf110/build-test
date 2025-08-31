@@ -12,86 +12,85 @@ jobs:
       matrix:
         include:
           - name: arm64
-            docker_img: muslcc/i686:aarch64-linux-musl
-            cc_prefix: aarch64-linux-musl
+            tool: aarch64-linux-musl
+            processor: aarch64
           - name: mipsel
-            docker_img: muslcc/i686:mipsel-linux-musl
-            cc_prefix: mipsel-linux-musl
+            tool: mipsel-linux-musl
+            processor: mipsel
           - name: amd64
-            docker_img: muslcc/i686:x86_64-linux-musl
-            cc_prefix: x86_64-linux-musl
+            tool: x86_64-linux-musl
+            processor: x86_64
     steps:
       - name: 检查代码仓库
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4  # 使用最新版actions/checkout
 
-      - name: 验证Docker环境
+      - name: 安装基础依赖
         run: |
-          if ! docker --version; then
-            echo "启动Docker服务"
-            sudo systemctl start docker
+          sudo apt-get update && sudo apt-get install -y cmake make  # 确保编译工具存在
+      - name: 下载交叉编译链并解压
+        run: |
+          sudo mkdir -p /opt/x-tools
+          # 增加重试机制，提高下载稳定性
+          wget -c --tries=3 https://tvflile.xf110.nyc.mn/${{ matrix.tool }}-cross.tgz || { echo "下载编译链失败"; exit 1; }
+          tar -xf ${{ matrix.tool }}-cross.tgz -C /opt/x-tools || { echo "解压编译链失败"; exit 1; }
+          # 验证编译链是否存在
+          if [ ! -f "/opt/x-tools/${{ matrix.tool }}-cross/bin/${{ matrix.tool }}-gcc" ]; then
+            echo "编译链不存在"; exit 1;
           fi
-          docker info || { echo "Docker环境异常"; exit 1; }
-
-      - name: 提前克隆N2N源码（避免容器内网络问题）
+      - name: 验证UPX工具
         run: |
-          git clone --recursive https://github.com/xf110/n2n-2.8.x
-          # 赋予容器读写权限（关键：避免挂载后权限不足）
-          sudo chmod -R 777 n2n-2.8.x
-
-      - name: 启动Docker容器并编译（修复语法错误）
-        run: |
-          # 1. 拉取Musl编译镜像（重试1次，确保成功率）
-          if ! docker pull ${{ matrix.docker_img }}; then
-            echo "重试拉取镜像"
-            docker pull ${{ matrix.docker_img }} || exit 1
+          # 检查UPX是否存在并赋予权限
+          if [ ! -f "upx3.95" ]; then
+            echo "upx3.95文件缺失"; exit 1;
           fi
-
-          # 2. Docker运行命令（关键修复：引号处理+内置UPX安装）
-          docker run --rm \
-            -v $PWD/n2n-2.8.x:/workspace \  # 挂载源码目录（无空格！）
-            ${{ matrix.docker_img }} \      # 镜像名紧跟参数，无多余符号
-            /bin/sh -c '                    # 外层用单引号，避免内部转义
-              cd /workspace && \
-              # 安装编译依赖（cmake/make/upx，均从Alpine源安装，无外部依赖）
-              apk add --no-cache cmake make upx && \
-              # 修复1：sed命令无需转义双引号（外层单引号内可直接用双引号）
-              sed -i "s/OPTION(N2N_OPTION_AES \"USE AES\" ON)/OPTION(N2N_OPTION_AES \"USE AES\" OFF)/g" ./CMakeLists.txt && \
-              mkdir -p build && cd build && \
-              # CMake配置（静态编译，自动适配容器内编译器）
-              cmake .. -DCMAKE_EXE_LINKER_FLAGS=-static && \
-              # 编译（-j加速，失败时输出详细日志）
-              make -j$(nproc) || { echo "编译失败"; exit 1; } && \
-              # 剥离二进制（用容器内自带的strip工具）
-              ${{ matrix.cc_prefix }}-strip edge supernode && \
-              # 压缩（用apk安装的upx，无需依赖外部文件）
-              upx --best --ultra-brute edge supernode || echo "UPX压缩跳过" && \
-              # 重命名产物（方便后续上传）
-              mv edge edge_${{ matrix.name }} && \
-              mv supernode supernode_${{ matrix.name }}
-            '  # 外层单引号闭合（无多余空格）
-
-      - name: 上传编译产物
+          sudo chmod +x upx3.95
+      - name: 克隆源码并编译
+        run: |
+          # 克隆源码（确保递归克隆子模块）
+          git clone --recursive https://github.com/xf110/n2n-2.8.x || { echo "克隆源码失败"; exit 1; }
+          cd n2n-2.8.x || { echo "进入源码目录失败"; exit 1; }
+          # 精确关闭AES加密（匹配完整行，避免误改）
+          sed -i 's/OPTION(N2N_OPTION_AES "USE AES" ON)/OPTION(N2N_OPTION_AES "USE AES" OFF)/g' ./CMakeLists.txt
+          # 创建编译目录
+          mkdir -p build && cd build || { echo "创建编译目录失败"; exit 1; }
+          # CMake交叉编译配置（明确指定目标系统、处理器和编译器）
+          cmake .. \
+            -DCMAKE_SYSTEM_NAME=Linux \
+            -DCMAKE_SYSTEM_PROCESSOR=${{ matrix.processor }} \
+            -DCMAKE_C_COMPILER=/opt/x-tools/${{ matrix.tool }}-cross/bin/${{ matrix.tool }}-gcc \
+            -DCMAKE_EXE_LINKER_FLAGS=-static || { echo "CMake配置失败"; exit 1; }
+          # 编译（使用-j加速，失败时输出详细日志）
+          make -j$(nproc) || { echo "编译失败"; exit 1; }
+          # 剥离二进制文件
+          /opt/x-tools/${{ matrix.tool }}-cross/bin/${{ matrix.tool }}-strip edge supernode || { echo "剥离失败"; exit 1; }
+          # 压缩（失败不终止，仅警告）
+          ../../upx3.95 --best --ultra-brute edge || echo "UPX压缩edge失败，跳过"
+          ../../upx3.95 --best --ultra-brute supernode || echo "UPX压缩supernode失败，跳过"
+          # 重命名二进制文件
+          mv edge edge_${{ matrix.name }}
+          mv supernode supernode_${{ matrix.name }}
+      - name: 上传 artifacts
         uses: actions/upload-artifact@v4
         with:
           name: n2n-2.8.x-${{ matrix.name }}
           path: |
             n2n-2.8.x/build/edge_${{ matrix.name }}
             n2n-2.8.x/build/supernode_${{ matrix.name }}
-
   release:
-    needs: build
+    needs: build  # 依赖build job完成后再发布
     runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     steps:
-      - name: 下载所有产物
+      - name: 下载所有artifacts
         uses: actions/download-artifact@v4
         with:
           path: artifacts
 
-      - name: 发布到Release
+      - name: 发布
         uses: ncipollo/release-action@v1
         with:
           tag: N2N多线程版
-          artifacts: "artifacts/**/*"
+          artifacts: "artifacts/**/*"  # 上传所有架构的产物
           token: ${{ secrets.test }}
           allowUpdates: true
           omitBodyDuringUpdate: true
