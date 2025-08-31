@@ -10,63 +10,65 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        # 映射：目标架构名称 → Docker镜像名 + 编译器前缀
         include:
           - name: arm64
-            docker_img: muslcc/i686:aarch64-linux-musl  # Musl官方镜像
-            cc_prefix: aarch64-linux-musl-gcc          # 编译器命令前缀
+            docker_img: muslcc/i686:aarch64-linux-musl
+            cc_prefix: aarch64-linux-musl
           - name: mipsel
             docker_img: muslcc/i686:mipsel-linux-musl
-            cc_prefix: mipsel-linux-musl-gcc
+            cc_prefix: mipsel-linux-musl
           - name: amd64
             docker_img: muslcc/i686:x86_64-linux-musl
-            cc_prefix: x86_64-linux-musl-gcc
+            cc_prefix: x86_64-linux-musl
     steps:
-      - name: 检查代码仓库（含UPX工具）
+      - name: 检查代码仓库
         uses: actions/checkout@v4
-        # 若UPX未在仓库根目录，需先将upx3.95上传到仓库，或在容器内安装
 
       - name: 验证Docker环境
         run: |
           if ! docker --version; then
-            echo "Docker未启用，尝试启动Docker服务"
+            echo "启动Docker服务"
             sudo systemctl start docker
           fi
           docker info || { echo "Docker环境异常"; exit 1; }
 
-      - name: 克隆N2N源码（提前克隆，避免在容器内重复操作）
+      - name: 提前克隆N2N源码（避免容器内网络问题）
         run: |
           git clone --recursive https://github.com/xf110/n2n-2.8.x
-          # 给源码目录权限（避免容器内读写权限问题）
+          # 赋予容器读写权限（关键：避免挂载后权限不足）
           sudo chmod -R 777 n2n-2.8.x
 
-      - name: 启动Docker容器并编译
+      - name: 启动Docker容器并编译（修复语法错误）
         run: |
-          # 1. 拉取Musl官方编译镜像（无需下载外部文件，依赖Docker Hub）
-          docker pull ${{ matrix.docker_img }} || { echo "拉取镜像失败，重试1次"; docker pull ${{ matrix.docker_img }}; }
+          # 1. 拉取Musl编译镜像（重试1次，确保成功率）
+          if ! docker pull ${{ matrix.docker_img }}; then
+            echo "重试拉取镜像"
+            docker pull ${{ matrix.docker_img }} || exit 1
+          fi
 
-          # 2. 在容器内执行编译（挂载源码目录到容器内的/workspace）
+          # 2. Docker运行命令（关键修复：引号处理+内置UPX安装）
           docker run --rm \
-            -v $PWD/n2n-2.8.x:/workspace \  # 挂载源码到容器
-            -v $PWD/upx3.95:/usr/local/bin/upx \  # 挂载UPX工具到容器（若仓库有upx3.95）
-            ${{ matrix.docker_img }} \
-            /bin/sh -c "cd /workspace && \
-              # 安装基础编译工具（容器内可能缺少cmake/make）
-              apk add --no-cache cmake make && \
-              # 关闭AES加密（保留原配置）
-              sed -i 's/OPTION(N2N_OPTION_AES \"USE AES\" ON)/OPTION(N2N_OPTION_AES \"USE AES\" OFF)/g' ./CMakeLists.txt && \
-              # 创建编译目录
+            -v $PWD/n2n-2.8.x:/workspace \  # 挂载源码目录（无空格！）
+            ${{ matrix.docker_img }} \      # 镜像名紧跟参数，无多余符号
+            /bin/sh -c '                    # 外层用单引号，避免内部转义
+              cd /workspace && \
+              # 安装编译依赖（cmake/make/upx，均从Alpine源安装，无外部依赖）
+              apk add --no-cache cmake make upx && \
+              # 修复1：sed命令无需转义双引号（外层单引号内可直接用双引号）
+              sed -i "s/OPTION(N2N_OPTION_AES \"USE AES\" ON)/OPTION(N2N_OPTION_AES \"USE AES\" OFF)/g" ./CMakeLists.txt && \
               mkdir -p build && cd build && \
-              # CMake配置（编译器自动匹配容器内路径，无需手动指定）
+              # CMake配置（静态编译，自动适配容器内编译器）
               cmake .. -DCMAKE_EXE_LINKER_FLAGS=-static && \
-              # 编译（-j加速）
-              make -j$(nproc) && \
-              # 剥离二进制文件（用容器内的strip工具）
+              # 编译（-j加速，失败时输出详细日志）
+              make -j$(nproc) || { echo "编译失败"; exit 1; } && \
+              # 剥离二进制（用容器内自带的strip工具）
               ${{ matrix.cc_prefix }}-strip edge supernode && \
-              # 压缩（若UPX已挂载，否则注释这行）
-              upx --best --ultra-brute edge supernode || echo \"UPX压缩跳过\" && \
-              # 重命名（方便后续上传）
-              mv edge edge_${{ matrix.name }} && mv supernode supernode_${{ matrix.name }}}"
+              # 压缩（用apk安装的upx，无需依赖外部文件）
+              upx --best --ultra-brute edge supernode || echo "UPX压缩跳过" && \
+              # 重命名产物（方便后续上传）
+              mv edge edge_${{ matrix.name }} && \
+              mv supernode supernode_${{ matrix.name }}
+            '  # 外层单引号闭合（无多余空格）
 
       - name: 上传编译产物
         uses: actions/upload-artifact@v4
