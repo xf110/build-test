@@ -61,20 +61,6 @@ jobs:
         if: always()
         with:
          name: n2n-2.8.x-${{ matrix.name }}
-         path: n2n-2.8.x/build/edge_${{ matrix.name }}
-      - 
-        name: 上传
-        uses: actions/upload-artifact@master
-        if: always()
-        with:
-         name: n2n-2.8.x-supernode-${{ matrix.name }}
-         path: n2n-2.8.x/build/supernode_${{ matrix.name }}
-      - 
-        name: 发布
-        uses: ncipollo/release-action@main
-        with:
-          tag: N2N多线程版
-          artifacts: n2n-2.8.x/build/edge_${{ matrix.name }}
-          token: ${{ secrets.test }}
-          allowUpdates: true
-          omitBodyDuringUpdate: true
+         path: |
+            n2n-2.8.x/build/edge_${{ matrix.name }}
+            n2n-2.8.x/build/supernode_${{ matrix.name }}
