@@ -1,12 +1,7 @@
 name: 多架构编译 sshpass
 
-# 触发条件：推送代码或手动触发
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-  workflow_dispatch:  # 允许手动触发
+  workflow_dispatch:  # 支持手动触发
 
 jobs:
   build:
@@ -14,41 +9,55 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        arch: [amd64, arm64]  # 目标架构
+        arch: [amd64, arm64]
 
     steps:
-      - name: 拉取代码
-        uses: actions/checkout@v4
-
-      - name: 安装依赖（amd64）
-        if: matrix.arch == 'amd64'
+      - name: 克隆 kevinburke/sshpass 仓库
         run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential autoconf
+          git clone https://github.com/kevinburke/sshpass.git
+          cd sshpass  # 进入仓库目录
 
-      - name: 安装依赖（arm64交叉编译）
+      - name: 安装基础依赖（所有架构）
+        run: |
+          cd sshpass  # 确保在仓库目录内操作
+          sudo apt-get update
+          sudo apt-get install -y build-essential autoconf automake
+
+      - name: 安装arm64交叉编译依赖
         if: matrix.arch == 'arm64'
         run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential autoconf crossbuild-essential-arm64
+          cd sshpass
+          sudo apt-get install -y crossbuild-essential-arm64
+
+      - name: 生成configure脚本
+        run: |
+          cd sshpass
+          autoreconf -fiv  # 生成构建所需的configure脚本
 
       - name: 配置编译（amd64）
         if: matrix.arch == 'amd64'
-        run: ./configure
+        run: |
+          cd sshpass
+          ./configure
 
       - name: 配置编译（arm64）
         if: matrix.arch == 'arm64'
-        run: ./configure --host=aarch64-linux-gnu
+        run: |
+          cd sshpass
+          ./configure --host=aarch64-linux-gnu
 
       - name: 编译
-        run: make
-
-      - name: 验证编译产物架构
         run: |
-          file sshpass  # 输出文件架构信息
+          cd sshpass
+          make
+
+      - name: 验证产物架构
+        run: |
+          cd sshpass
+          file sshpass  # 输出二进制文件的架构信息
 
       - name: 上传编译产物
         uses: actions/upload-artifact@v4
         with:
           name: sshpass-${{ matrix.arch }}
-          path: sshpass  # 上传编译生成的二进制文件
+          path: sshpass/sshpass  # 指定二进制文件路径
