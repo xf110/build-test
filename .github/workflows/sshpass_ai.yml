@@ -1,63 +1,82 @@
-name: 多架构编译 sshpass
-
+name: SSHPass 多架构静态编译
 on:
-  workflow_dispatch:  # 支持手动触发
-
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+env:
+  TZ: Asia/Shanghai
 jobs:
   build:
-    name: 编译 ${{ matrix.arch }} 架构
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        arch: [amd64, arm64]
-
+        include:
+          - name: arm64
+            tool: aarch64-linux-musl
+            processor: aarch64
+          - name: mipsel
+            tool: mipsel-linux-musl
+            processor: mipsel
+          - name: amd64
+            tool: x86_64-linux-musl
+            processor: x86_64
     steps:
-      - name: 克隆 kevinburke/sshpass 仓库
-        run: |
-          git clone https://github.com/kevinburke/sshpass.git
-          cd sshpass  # 进入仓库目录
+      - name: 检查代码仓库
+        uses: actions/checkout@v4
 
-      - name: 安装基础依赖（所有架构）
+      - name: 安装基础依赖
         run: |
-          cd sshpass  # 确保在仓库目录内操作
-          sudo apt-get update
-          sudo apt-get install -y build-essential autoconf automake
-
-      - name: 安装arm64交叉编译依赖
-        if: matrix.arch == 'arm64'
+          sudo apt-get update && sudo apt-get install -y \
+            make autoconf automake libtool  # sshpass需要autotools工具链
+      
+      - name: 下载交叉编译链并解压
         run: |
-          cd sshpass
-          sudo apt-get install -y crossbuild-essential-arm64
-
-      - name: 生成configure脚本
+          sudo mkdir -p /opt/x-tools
+          wget -c --tries=3 https://github.com/xf110/build-test/releases/download/n2n2/${{ matrix.tool }}-cross.tgz || { echo "下载编译链失败"; exit 1; }
+          tar -xf ${{ matrix.tool }}-cross.tgz -C /opt/x-tools || { echo "解压编译链失败"; exit 1; }
+          if [ ! -f "/opt/x-tools/${{ matrix.tool }}-cross/bin/${{ matrix.tool }}-gcc" ]; then
+            echo "编译链不存在"; exit 1;
+          fi
+      
+      - name: 验证UPX工具
         run: |
-          cd sshpass
-          autoreconf -fiv  # 生成构建所需的configure脚本
-
-      - name: 配置编译（amd64）
-        if: matrix.arch == 'amd64'
+          if [ ! -f "upx3.95" ]; then
+            echo "upx3.95文件缺失"; exit 1;
+          fi
+          sudo chmod +x upx3.95
+      
+      - name: 克隆sshpass源码并编译
         run: |
-          cd sshpass
-          ./configure
-
-      - name: 配置编译（arm64）
-        if: matrix.arch == 'arm64'
-        run: |
-          cd sshpass
-          ./configure --host=aarch64-linux-gnu
-
-      - name: 编译
-        run: |
-          cd sshpass
-          make
-
-      - name: 验证产物架构
-        run: |
-          cd sshpass
-          file sshpass  # 输出二进制文件的架构信息
-
+          # 克隆sshpass源码（使用官方镜像）
+          git clone https://github.com/kevinburke/sshpass.git || { echo "克隆源码失败"; exit 1; }
+          cd sshpass || { echo "进入源码目录失败"; exit 1; }
+          
+          # 生成configure脚本（sshpass使用autotools）
+          autoreconf -fiv || { echo "生成configure失败"; exit 1; }
+          
+          # 配置交叉编译环境
+          export CC=/opt/x-tools/${{ matrix.tool }}-cross/bin/${{ matrix.tool }}-gcc
+          export AR=/opt/x-tools/${{ matrix.tool }}-cross/bin/${{ matrix.tool }}-ar
+          
+          # 静态编译配置（强制链接musl静态库）
+          ./configure \
+            --host=${{ matrix.tool }} \
+            --prefix=/ \
+            CFLAGS="-static -Os" \
+            LDFLAGS="-static" || { echo "configure失败"; exit 1; }
+          
+          # 编译并剥离符号
+          make -j$(nproc) || { echo "编译失败"; exit 1; }
+          /opt/x-tools/${{ matrix.tool }}-cross/bin/${{ matrix.tool }}-strip sshpass || { echo "剥离失败"; exit 1; }
+          
+          # 压缩二进制文件
+          ../upx3.95 --best --ultra-brute sshpass || echo "UPX压缩失败，跳过"
+          
+          # 重命名适配架构
+          mv sshpass sshpass_${{ matrix.name }}
+      
       - name: 上传编译产物
         uses: actions/upload-artifact@v4
         with:
-          name: sshpass-${{ matrix.arch }}
-          path: sshpass/sshpass  # 指定二进制文件路径
+          name: sshpass-${{ matrix.name }}
+          path: sshpass/sshpass_${{ matrix.name }}
