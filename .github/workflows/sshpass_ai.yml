@@ -62,8 +62,8 @@ jobs:
           ./configure \
             --host=${{ matrix.tool }} \
             --prefix=/ \
-            CFLAGS="-static -Os" \
-            LDFLAGS="-static" || { echo "configure失败"; exit 1; }
+            #CFLAGS="-static -Os" \
+            #LDFLAGS="-static" || { echo "configure失败"; exit 1; }
           
           # 编译并剥离符号
           make -j$(nproc) || { echo "编译失败"; exit 1; }
