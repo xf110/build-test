@@ -1,0 +1,54 @@
+name: 多架构编译 sshpass
+
+# 触发条件：推送代码或手动触发
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  build:
+    name: 编译 ${{ matrix.arch }} 架构
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        arch: [amd64, arm64]  # 目标架构
+
+    steps:
+      - name: 拉取代码
+        uses: actions/checkout@v4
+
+      - name: 安装依赖（amd64）
+        if: matrix.arch == 'amd64'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential autoconf
+
+      - name: 安装依赖（arm64交叉编译）
+        if: matrix.arch == 'arm64'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential autoconf crossbuild-essential-arm64
+
+      - name: 配置编译（amd64）
+        if: matrix.arch == 'amd64'
+        run: ./configure
+
+      - name: 配置编译（arm64）
+        if: matrix.arch == 'arm64'
+        run: ./configure --host=aarch64-linux-gnu
+
+      - name: 编译
+        run: make
+
+      - name: 验证编译产物架构
+        run: |
+          file sshpass  # 输出文件架构信息
+
+      - name: 上传编译产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: sshpass-${{ matrix.arch }}
+          path: sshpass  # 上传编译生成的二进制文件
