@@ -11,13 +11,13 @@ jobs:
         include:
           - name: aarch64-unknown-linux-musl
             tool: aarch64-linux-musl
-            rv: 1.81
+            rv: 1.77
           - name: mipsel-unknown-linux-musl
             tool: mipsel-linux-musl
             rv: 1.71.1
           - name: x86_64-unknown-linux-musl
             tool: x86_64-linux-musl
-            rv: 1.81
+            rv: 1.77
     steps:
       -
         name: 检查代码仓库
