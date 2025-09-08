@@ -43,7 +43,7 @@ jobs:
           EOF
           git clone --recursive --branch 1.2.9 --depth 1 https://github.com/lbl8603/vnt
           cd vnt
-          cargo clean
+          cargo update -p home --precise 0.5.9
           cargo build --package vnt-cli --target=${{ matrix.name }} --release --no-default-features
           ../upx3.95 --lzma --best target/${{ matrix.name }}/release/vnt-cli     
       - 
