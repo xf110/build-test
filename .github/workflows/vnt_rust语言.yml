@@ -14,7 +14,7 @@ jobs:
             rv: 1.81
           - name: mipsel-unknown-linux-musl
             tool: mipsel-linux-musl
-            rv: 1.81
+            rv: 1.71.1
           - name: x86_64-unknown-linux-musl
             tool: x86_64-linux-musl
             rv: 1.81
@@ -44,7 +44,7 @@ jobs:
           git clone --recursive -b 1.2.x https://github.com/lbl8603/vnt 
           cd vnt
           rm -f Cargo.lock
-          cargo generate-lockfile
+          cargo update -p home --precise 0.5.9
           cargo build --package vnt-cli --target=${{ matrix.name }} --release --no-default-features
           ../upx3.95 --lzma --best target/${{ matrix.name }}/release/vnt-cli     
       - 
