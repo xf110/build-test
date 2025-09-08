@@ -56,7 +56,7 @@ jobs:
           ../upx3.95 --lzma --best target/${{ matrix.name }}/release/vnt-cli     
 
       - name: 上传
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: vnt_1.2.9_${{ matrix.name }}
