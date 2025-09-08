@@ -12,10 +12,14 @@ jobs:
           - name: aarch64-unknown-linux-musl
             tool: aarch64-linux-musl
             rv: 1.77
+          # 可能不被 rustup 支持，建议先测试
+          # - name: mipsel-unknown-linux-musl
+          #   tool: mipsel-linux-musl
+          #   rv: 1.71.1
           - name: x86_64-unknown-linux-musl
             tool: x86_64-linux-musl
             rv: 1.77
-          # mipsel 可能不被 rustup 支持，建议先测试后再加
+
     steps:
       - name: 检查代码仓库
         uses: actions/checkout@v3
@@ -23,13 +27,15 @@ jobs:
       - name: 安装 Rustup
         run: |
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-          echo "source $HOME/.cargo/env" >> $GITHUB_ENV
+          # 持久化 cargo bin 到 PATH，这样后续步骤无需 source
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
 
-      - name: 下载编译器和 UPX
+      - name: 下载交叉编译工具链和 UPX
         run: |
           mkdir -p /opt/x-tools ~/.cargo
           wget -q https://musl.cc/${{ matrix.tool }}-cross.tgz
           tar -xf ${{ matrix.tool }}-cross.tgz -C /opt/x-tools
+          # 下载 UPX
           wget -q https://github.com/upx/upx/releases/download/v3.95/upx-3.95-amd64_linux.tar.xz
           tar -xf upx-3.95-amd64_linux.tar.xz
           mv upx-3.95-amd64_linux/upx ./upx3.95
@@ -37,10 +43,11 @@ jobs:
 
       - name: 安装 Rust 版本和 target
         run: |
-          source $HOME/.cargo/env
           rustup install ${{ matrix.rv }}
           rustup default ${{ matrix.rv }}
-          rustup target list | grep ${{ matrix.name }} || echo "::warning::Target ${{ matrix.name }} 不存在"
+          if ! rustup target list | grep -q ${{ matrix.name }}; then
+            echo "::error::Rust target ${{ matrix.name }} 不存在，编译可能失败"
+          fi
           rustup target add ${{ matrix.name }}
           echo "[target.${{ matrix.name }}]" >> ~/.cargo/config
           echo "linker = \"/opt/x-tools/${{ matrix.tool }}-cross/bin/${{ matrix.tool }}-gcc\"" >> ~/.cargo/config
@@ -48,16 +55,17 @@ jobs:
 
       - name: 编译 vnt
         run: |
-          git clone --recursive -b 1.2.x https://github.com/lbl8603/vnt 
+          git clone --recursive -b 1.2.x https://github.com/lbl8603/vnt
           cd vnt
           cargo update
           cargo clean
           cargo build --package vnt-cli --target=${{ matrix.name }} --release --no-default-features
-          ../upx3.95 --lzma --best target/${{ matrix.name }}/release/vnt-cli     
+          ../upx3.95 --lzma --best target/${{ matrix.name }}/release/vnt-cli
 
-      - name: 上传
+      - name: 上传构建产物
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: vnt_1.2.9_${{ matrix.name }}
           path: vnt/target/${{ matrix.name }}/release/vnt-cli
+          retention-days: 7
