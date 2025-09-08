@@ -12,44 +12,52 @@ jobs:
           - name: aarch64-unknown-linux-musl
             tool: aarch64-linux-musl
             rv: 1.77
-          - name: mipsel-unknown-linux-musl
-            tool: mipsel-linux-musl
-            rv: 1.71.1
           - name: x86_64-unknown-linux-musl
             tool: x86_64-linux-musl
             rv: 1.77
+          # mipsel 可能不被 rustup 支持，建议先测试后再加
     steps:
-      -
-        name: 检查代码仓库
-        uses: actions/checkout@v3      
-      - 
-        name: 下载编译器和源码并编译
+      - name: 检查代码仓库
+        uses: actions/checkout@v3
+
+      - name: 安装 Rustup
         run: |
-          chmod +x upx3.95
-          sudo mkdir -p /opt/x-tools
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+          echo "source $HOME/.cargo/env" >> $GITHUB_ENV
+
+      - name: 下载编译器和 UPX
+        run: |
+          mkdir -p /opt/x-tools ~/.cargo
           wget -q https://musl.cc/${{ matrix.tool }}-cross.tgz
           tar -xf ${{ matrix.tool }}-cross.tgz -C /opt/x-tools
-          #####安装rustup#######
+          wget -q https://github.com/upx/upx/releases/download/v3.95/upx-3.95-amd64_linux.tar.xz
+          tar -xf upx-3.95-amd64_linux.tar.xz
+          mv upx-3.95-amd64_linux/upx ./upx3.95
+          chmod +x ./upx3.95
+
+      - name: 安装 Rust 版本和 target
+        run: |
+          source $HOME/.cargo/env
           rustup install ${{ matrix.rv }}
           rustup default ${{ matrix.rv }}
-          #####此版本rustup支持的架构列表#####
-          rustup target list
-          #####添加架构#####
+          rustup target list | grep ${{ matrix.name }} || echo "::warning::Target ${{ matrix.name }} 不存在"
           rustup target add ${{ matrix.name }}
-          cat >>~/.cargo/config <<EOF
-          [target.${{ matrix.name }}]
-          linker = "/opt/x-tools/${{ matrix.tool }}-cross/bin/${{ matrix.tool }}-gcc"
-          rustflags = ["-C", "target-feature=+crt-static","-C", "strip=symbols"]
-          EOF
+          echo "[target.${{ matrix.name }}]" >> ~/.cargo/config
+          echo "linker = \"/opt/x-tools/${{ matrix.tool }}-cross/bin/${{ matrix.tool }}-gcc\"" >> ~/.cargo/config
+          echo "rustflags = [\"-C\", \"target-feature=+crt-static\",\"-C\", \"strip=symbols\"]" >> ~/.cargo/config
+
+      - name: 编译 vnt
+        run: |
           git clone --recursive -b 1.2.x https://github.com/lbl8603/vnt 
           cd vnt
+          cargo update
           cargo clean
           cargo build --package vnt-cli --target=${{ matrix.name }} --release --no-default-features
           ../upx3.95 --lzma --best target/${{ matrix.name }}/release/vnt-cli     
-      - 
-        name: 上传
-        uses: actions/upload-artifact@master
+
+      - name: 上传
+        uses: actions/upload-artifact@v3
         if: always()
         with:
-         name: vnt_1.2.9_${{ matrix.name }}
-         path: vnt/target/${{ matrix.name }}/release/vnt-cli
+          name: vnt_1.2.9_${{ matrix.name }}
+          path: vnt/target/${{ matrix.name }}/release/vnt-cli
