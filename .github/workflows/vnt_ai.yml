@@ -34,7 +34,7 @@ jobs:
       FEATURES: ${{ matrix.FEATURES }}
 
     steps:
-      - uses: actions/checkout@v4
+      
 
       - name: Init submodules
         uses: snickerbockers/submodules-init@v4
@@ -121,6 +121,8 @@ jobs:
 
       - name: Build binaries
         run: |
+          git clone --recursive --branch main --depth 1 https://github.com/lbl8603/vnt
+          cd vnt
           # 编译vn-link-cli和vnt-cli
           if [[ $TARGET =~ ^mips.*$ ]]; then
             cargo +nightly build --package vn-link-cli --release --verbose --target $TARGET -Z build-std=std,panic_abort --features $FEATURES
