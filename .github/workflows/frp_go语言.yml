@@ -35,9 +35,9 @@ jobs:
         uses: actions/setup-go@v4
         with:
           go-version: 1.22
-      -
-        name: 检查代码仓库
-        uses: actions/checkout@v3
+      #-
+        #name: 检查代码仓库
+        #uses: actions/checkout@v3
       - 
         name: 下载
         run: |
