@@ -49,6 +49,7 @@ jobs:
           cd  frp
           go get github.com/miekg/dns@latest
           go mod tidy
+          cd ..
           cd frp/cmd/${{ matrix.SORC }}
           export GOOS=${{ matrix.GOOS }}
           export GOARCH=${{ matrix.GOARCH }}
