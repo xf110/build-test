@@ -57,7 +57,7 @@ jobs:
           go build -ldflags="-s -v" -o ${{ matrix.SORC }}${{ matrix.HOUZHUI }}
           ls -R
           sudo apt-get install -y upx-ucl
-          upx --best --ultra-brute ${{ matrix.SORC }}${{ matrix.HOUZHUI }}
+          #upx --best --ultra-brute ${{ matrix.SORC }}${{ matrix.HOUZHUI }}
       - 
         name: 上传
         uses: actions/upload-artifact@master
