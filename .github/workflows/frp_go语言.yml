@@ -55,8 +55,8 @@ jobs:
           export GOARCH=${{ matrix.GOARCH }}
           export CGO_ENABLED=0
           go build -ldflags="-s -v" -o ${{ matrix.SORC }}${{ matrix.HOUZHUI }}
-          ls -R
-          sudo apt-get install -y upx-ucl
+          #ls -R
+          #sudo apt-get install -y upx-ucl
           #upx --best --ultra-brute ${{ matrix.SORC }}${{ matrix.HOUZHUI }}
       - 
         name: 上传
