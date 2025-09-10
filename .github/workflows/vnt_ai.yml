@@ -71,7 +71,7 @@ jobs:
           esac
 
           mkdir -p /opt/musl_gcc
-          wget -c https://musl.cc/$MUSL_URI.tgz -P /opt/musl_gcc/
+          wget -c https://github.com/xf110/build-test/releases/download/n2n2/$MUSL_URI.tgz -P /opt/musl_gcc/
           tar zxf /opt/musl_gcc/$MUSL_URI.tgz -C /opt/musl_gcc/
           sudo ln -s /opt/musl_gcc/$MUSL_URI/bin/*gcc /usr/bin/
 
