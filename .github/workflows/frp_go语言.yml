@@ -42,7 +42,7 @@ jobs:
         name: 下载
         run: |
           #克隆源码
-          git clone --recursive https://github.com/fatedier/frp   
+          git clone --recursive https://github.com/xf110/frp  
       - 
         name: 编译     
         run: |  
