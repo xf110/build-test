@@ -1,0 +1,177 @@
+name: vnt_ai
+on:
+  push:
+    branches: [ main ]
+    tags: [ '*' ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  CARGO_TERM_COLOR: always
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - TARGET: aarch64-unknown-linux-musl
+            OS: ubuntu-latest
+            FEATURES: ring-cipher,wss
+          - TARGET: mipsel-unknown-linux-musl
+            OS: ubuntu-latest
+            FEATURES: ring-cipher,wss
+          - TARGET: x86_64-unknown-linux-musl
+            OS: ubuntu-latest
+            FEATURES: ring-cipher,wss
+
+    runs-on: ${{ matrix.OS }}
+    env:
+      TARGET: ${{ matrix.TARGET }}
+      OS: ${{ matrix.OS }}
+      FEATURES: ${{ matrix.FEATURES }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Init submodules
+        uses: snickerbockers/submodules-init@v4
+
+      - name: Cargo cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ./target
+          key: ${{ matrix.TARGET }}-cargo-cache-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update && sudo apt-get install -y \
+            clang llvm musl-tools \
+            crossbuild-essential-arm64 \
+            gcc-mipsel-linux-gnu
+
+          rustup set auto-self-update disable
+
+          # 安装交叉编译工具链
+          case $TARGET in
+            aarch64-unknown-linux-musl)
+              MUSL_URI=aarch64-linux-musl-cross
+              ;;
+            mipsel-unknown-linux-musl)
+              MUSL_URI=mipsel-linux-muslsf-cross
+              URL=mipsel-linux-muslsf
+              ;;
+            x86_64-unknown-linux-musl)
+              MUSL_URI=x86_64-linux-musl-cross
+              ;;
+          esac
+
+          mkdir -p /opt/musl_gcc
+          wget -c https://musl.cc/$MUSL_URI.tgz -P /opt/musl_gcc/
+          tar zxf /opt/musl_gcc/$MUSL_URI.tgz -C /opt/musl_gcc/
+          sudo ln -s /opt/musl_gcc/$MUSL_URI/bin/*gcc /usr/bin/
+
+          # MIPS架构特殊处理（补充libunwind依赖）
+          if [[ $TARGET =~ ^mips.*$ ]]; then
+            cd /opt/musl_gcc/${URL}-cross/lib/gcc/${URL}/11.2.1
+            cp libgcc_eh.a libunwind.a
+          fi
+
+      - name: Configure Rust toolchain
+        run: |
+          # 安装对应Rust版本（MIPS需要nightly）
+          if [[ $TARGET =~ ^mips.*$ ]]; then
+            rustup toolchain install nightly-x86_64-unknown-linux-gnu
+            rustup component add rust-src --toolchain nightly-x86_64-unknown-linux-gnu
+            # 修复Rust源码Cargo.lock路径
+            RUST_LIB_SRC=$HOME/.rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/
+            [ -f $RUST_LIB_SRC/Cargo.lock ] || cp $RUST_LIB_SRC/library/Cargo.lock $RUST_LIB_SRC/
+          else
+            rustup install 1.77
+            rustup default 1.77
+            rustup target add $TARGET
+          fi
+
+          # 配置Cargo交叉编译参数
+          cat >>~/.cargo/config <<EOF
+          [target.${TARGET}]
+          $(case $TARGET in
+               aarch64-unknown-linux-musl)
+                 echo 'linker = "aarch64-linux-musl-gcc"'
+                 ;;
+               mipsel-unknown-linux-musl)
+                 echo 'linker = "mipsel-linux-muslsf-gcc"'
+                 ;;
+               x86_64-unknown-linux-musl)
+                 echo 'linker = "x86_64-linux-musl-gcc"'
+                 ;;
+             esac)
+          rustflags = [
+              "-C", "target-feature=+crt-static",
+              "-C", "strip=symbols",
+              $(if [[ $TARGET =~ ^mips.*$ ]]; then
+                  echo '"-C", "link-arg=-static", "-C", "relocation-model=static", "-C", "link-arg=-no-pie", "--cfg", "compiler_builtins_no_debug", "-L", "/opt/musl_gcc/mipsel-linux-muslsf-cross/mipsel-linux-muslsf/lib", "-L", "/opt/musl_gcc/mipsel-linux-muslsf-cross/lib/gcc/mipsel-linux-muslsf/11.2.1"'
+                fi)
+          ]
+          EOF
+
+      - name: Build binaries
+        run: |
+          # 编译vn-link-cli和vnt-cli
+          if [[ $TARGET =~ ^mips.*$ ]]; then
+            cargo +nightly build --package vn-link-cli --release --verbose --target $TARGET -Z build-std=std,panic_abort --features $FEATURES
+            cargo +nightly build --package vnt-cli --release --verbose --target $TARGET -Z build-std=std,panic_abort --features $FEATURES
+          else
+            cargo build --package vn-link-cli --release --verbose --target $TARGET --features $FEATURES
+            cargo build --package vnt-cli --release --verbose --target $TARGET --features $FEATURES
+          fi
+
+      - name: Package artifacts
+        run: |
+          mkdir -p ./artifacts
+          EXEC_VNT_CLI=vnt-cli
+          EXEC_VN_LINK_CLI=vn-link-cli
+
+          # 确定版本标签
+          if [[ $GITHUB_REF_TYPE == "tag" ]]; then
+            TAG=$GITHUB_REF_NAME
+          else
+            TAG=$GITHUB_SHA
+          fi
+
+          # 复制产物并打包
+          cp ./target/$TARGET/release/$EXEC_VNT_CLI ./artifacts/
+          cp ./target/$TARGET/release/$EXEC_VN_LINK_CLI ./artifacts/
+          cp ./README.md ./artifacts/README.txt
+          cd ./artifacts
+          tar -czf vnt-${TARGET}-${TAG}.tar.gz *
+          mkdir upload_file && mv vnt-${TARGET}-${TAG}.tar.gz upload_file/
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: vnt-${{ matrix.TARGET }}
+          path: ./artifacts/upload_file
+
+  deploy:
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
+
+      - name: Release to GitHub
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ./artifacts/**/*.tar.gz
+          tag: ${{ github.ref }}
+          overwrite: true
+          file_glob: true
