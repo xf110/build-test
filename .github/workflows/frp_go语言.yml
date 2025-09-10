@@ -46,6 +46,9 @@ jobs:
       - 
         name: 编译     
         run: |  
+          cd  frp
+          go get github.com/miekg/dns@latest
+          go mod tidy
           cd frp/cmd/${{ matrix.SORC }}
           export GOOS=${{ matrix.GOOS }}
           export GOARCH=${{ matrix.GOARCH }}
